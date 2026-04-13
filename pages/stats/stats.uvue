@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="uts">
-import { getRecords, type SportRecord, type SportType, sportTypeNames } from '../../utils/storage.uts'
+import { getRecords, type SportRecord, type SportType, getSportTypeName } from '../../utils/storage.uts'
 import { getCurrentTheme, getThemeColors, type ThemeColors } from '../../utils/theme.uts'
 
 type TabType = 'week' | 'month' | 'all'
@@ -100,17 +100,19 @@ const totalCalories = ref(0)
 const activeDays = ref(0)
 const totalCount = ref(0)
 const records = ref<SportRecord[]>([])
-const chartData = ref<{ label: string; height: number; value: number }[]>([])
+type ChartItem = { label: string; height: number; value: number }
+
+const chartData = ref<ChartItem[]>([])
 const themeColors = ref<ThemeColors>(getThemeColors('dark'))
 
-const typeIcons: Record<SportType, string> = {
-	running: '🏃',
-	yoga: '🧘',
-	strength: '💪',
-	swimming: '🏊',
-	cycling: '🚴',
-	dance: '💃',
-	other: '⚡'
+function getSportIcon(type: SportType): string {
+	if (type === 'running') return '🏃'
+	if (type === 'yoga') return '🧘'
+	if (type === 'strength') return '💪'
+	if (type === 'swimming') return '🏊'
+	if (type === 'cycling') return '🚴'
+	if (type === 'dance') return '💃'
+	return '⚡'
 }
 
 function loadTheme() {
@@ -119,11 +121,14 @@ function loadTheme() {
 }
 
 function getTypeIcon(type: SportType): string {
-	return typeIcons[type] || '⚡'
+	return getSportIcon(type)
 }
 
 function getDateString(date: Date): string {
-	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+	const year = date.getFullYear()
+	const month = (date.getMonth() + 1).toString()
+	const day = date.getDate().toString()
+	return year + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0')
 }
 
 function getStartDate(tab: TabType): string {
@@ -222,11 +227,15 @@ function calculateChart() {
 	const maxValue = Math.max(...values, 1)
 	const maxHeight = 120
 	
-	chartData.value = labels.map((label: string, index: number) => ({
-		label,
-		value: values[index],
-		height: Math.round((values[index] / maxValue) * maxHeight)
-	}))
+	const newChartData: ChartItem[] = []
+	for (let i = 0; i < labels.length; i++) {
+		newChartData.push({
+			label: labels[i],
+			value: values[i],
+			height: Math.round((values[i] / maxValue) * maxHeight)
+		})
+	}
+	chartData.value = newChartData
 }
 
 function switchTab(tab: TabType) {

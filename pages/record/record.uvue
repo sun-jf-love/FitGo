@@ -9,13 +9,13 @@
 					<view 
 						v-for="(item, index) in sportTypes" 
 						:key="index"
-						:class="['type-option', 'type-color-' + (index % 4), { active: selectedType === item.type }]"
-						@click="selectType(item.type)"
+						:class="['type-option', 'type-color-' + (index % 4), { active: selectedType === item['type'] }]"
+						@click="selectType(item['type'] as SportType)"
 					>
 						<view class="type-icon-wrap">
-							<text class="type-icon">{{ item.icon }}</text>
+							<text class="type-icon">{{ item['icon'] }}</text>
 						</view>
-						<text :class="['type-name', { active: selectedType === item.type }]" :style="{ color: selectedType === item.type ? themeColors.primary : themeColors.textMuted }">{{ item.name }}</text>
+						<text :class="['type-name', { active: selectedType === item['type'] }]" :style="{ color: selectedType === item['type'] ? themeColors.primary : themeColors.textMuted }">{{ item['name'] }}</text>
 					</view>
 				</view>
 			</view>
@@ -81,17 +81,23 @@
 </template>
 
 <script setup lang="uts">
-import { addRecord, getTodayDateString, sportTypeNames, type SportType } from '../../utils/storage.uts'
+import { addRecord, getTodayDateString, getSportTypeName, type SportType } from '../../utils/storage.uts'
 import { getCurrentTheme, getThemeColors, type ThemeColors } from '../../utils/theme.uts'
 
-const sportTypes = ref([
-	{ type: 'running' as SportType, name: '跑步', icon: '🏃' },
-	{ type: 'yoga' as SportType, name: '瑜伽', icon: '🧘' },
-	{ type: 'strength' as SportType, name: '力量训练', icon: '💪' },
-	{ type: 'swimming' as SportType, name: '游泳', icon: '🏊' },
-	{ type: 'cycling' as SportType, name: '骑行', icon: '🚴' },
-	{ type: 'dance' as SportType, name: '健身操', icon: '💃' },
-	{ type: 'other' as SportType, name: '其他', icon: '⚡' }
+type SportTypeItem = {
+	type: SportType
+	name: string
+	icon: string
+}
+
+const sportTypes = ref<SportTypeItem[]>([
+	{ type: 'running', name: '跑步', icon: '🏃' },
+	{ type: 'yoga', name: '瑜伽', icon: '🧘' },
+	{ type: 'strength', name: '力量训练', icon: '💪' },
+	{ type: 'swimming', name: '游泳', icon: '🏊' },
+	{ type: 'cycling', name: '骑行', icon: '🚴' },
+	{ type: 'dance', name: '健身操', icon: '💃' },
+	{ type: 'other', name: '其他', icon: '⚡' }
 ])
 
 const quickDurations = ref([15, 30, 45, 60, 90])
@@ -109,8 +115,8 @@ function loadTheme() {
 
 onLoad((options: OnLoadOptions) => {
 	loadTheme()
-	if (options != null && options.type != null) {
-		selectedType.value = options.type as SportType
+	if (options != null && options['type'] != null) {
+		selectedType.value = options['type'] as SportType
 	}
 })
 
@@ -156,7 +162,7 @@ function saveRecord() {
 	
 	addRecord({
 		type: selectedType.value,
-		typeName: sportTypeNames[selectedType.value],
+		typeName: getSportTypeName(selectedType.value),
 		duration: duration.value,
 		calories: isNaN(caloriesNum) ? 0 : caloriesNum,
 		date: getTodayDateString(),

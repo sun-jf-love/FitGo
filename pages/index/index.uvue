@@ -39,12 +39,12 @@
 					v-for="(item, index) in sportTypes" 
 					:key="index" 
 					:class="['sport-item', 'sport-color-' + (index % 4)]"
-					@click="openRecordPage(item.type)"
+					@click="openRecordPage(item['type'] as string)"
 				>
 					<view class="sport-icon-wrap">
-						<text class="sport-icon">{{ item.icon }}</text>
+						<text class="sport-icon">{{ item['icon'] }}</text>
 					</view>
-					<text class="sport-name" :style="{ color: themeColors.textSecondary }">{{ item.name }}</text>
+					<text class="sport-name" :style="{ color: themeColors.textSecondary }">{{ item['name'] }}</text>
 				</view>
 			</view>
 		</view>
@@ -88,7 +88,13 @@ const progressWidth = ref('0%')
 const isFirstLoad = ref(true)
 const themeColors = ref<ThemeColors>(getThemeColors('dark'))
 
-const sportTypes = ref([
+type SportTypeItem = {
+	type: string
+	name: string
+	icon: string
+}
+
+const sportTypes = ref<SportTypeItem[]>([
 	{ type: 'running', name: '跑步', icon: '🏃' },
 	{ type: 'yoga', name: '瑜伽', icon: '🧘' },
 	{ type: 'strength', name: '力量', icon: '💪' },
@@ -138,9 +144,9 @@ function loadData() {
 
 function formatTime(timestamp: number): string {
 	const date = new Date(timestamp)
-	const hours = date.getHours()
-	const minutes = date.getMinutes()
-	return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+	const hours = date.getHours().toString()
+	const minutes = date.getMinutes().toString()
+	return hours.padStart(2, '0') + ':' + minutes.padStart(2, '0')
 }
 
 function openRecordPage(sportType: string) {

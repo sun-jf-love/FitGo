@@ -102,7 +102,7 @@
 		<view class="glass-card section" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
 			<text class="section-title" :style="{ color: themeColors.textMuted }">数据管理</text>
 			
-			<view class="setting-item" @click="exportData">
+			<view class="setting-item" @click="handleExportData">
 				<text class="setting-label" :style="{ color: themeColors.text }">导出数据</text>
 				<view class="setting-value">
 					<text class="setting-arrow" :style="{ color: themeColors.textMuted }">&gt;</text>
@@ -196,10 +196,10 @@ function initSettings() {
 	dailyGoalInput.value = data.dailyGoal
 	
 	for (let i = 0; i < 24; i++) {
-		hours.value.push(String(i).padStart(2, '0'))
+		hours.value.push(i.toString().padStart(2, '0'))
 	}
 	for (let i = 0; i < 60; i++) {
-		minutes.value.push(String(i).padStart(2, '0'))
+		minutes.value.push(i.toString().padStart(2, '0'))
 	}
 	
 	const timeParts = data.reminderTime.split(':')
@@ -244,7 +244,13 @@ function closeAll() {
 	showDaysModal.value = false
 }
 
-function onTimeChange(e: { detail: { value: number[] } }) {
+type TimeChangeValue = { value: number[] }
+
+type TimeChangeEvent = {
+	detail: TimeChangeValue
+}
+
+function onTimeChange(e: TimeChangeEvent) {
 	timePickerValue.value = e.detail.value
 }
 
@@ -290,6 +296,17 @@ function setTheme(theme: 'light' | 'dark') {
 	uni.$emit('themeChange', theme)
 }
 
+function saveGoal() {
+	if (dailyGoalInput.value < 5) {
+		dailyGoalInput.value = 5
+	}
+	if (dailyGoalInput.value > 180) {
+		dailyGoalInput.value = 180
+	}
+	settings.value.dailyGoal = dailyGoalInput.value
+	saveSettings(settings.value)
+}
+
 function decreaseGoal() {
 	if (dailyGoalInput.value > 5) {
 		dailyGoalInput.value -= 5
@@ -304,18 +321,7 @@ function increaseGoal() {
 	}
 }
 
-function saveGoal() {
-	if (dailyGoalInput.value < 5) {
-		dailyGoalInput.value = 5
-	}
-	if (dailyGoalInput.value > 180) {
-		dailyGoalInput.value = 180
-	}
-	settings.value.dailyGoal = dailyGoalInput.value
-	saveSettings(settings.value)
-}
-
-function exportData() {
+function handleExportData() {
 	const data = exportData()
 	uni.setStorageSync('fitgo_export', data)
 	uni.showModal({
