@@ -17,6 +17,7 @@ export interface UserSettings {
 	reminderMethod: 'push' | 'inapp' | 'both'
 	dailyGoal: number
 	sportTypes: SportType[]
+	theme: 'light' | 'dark'
 }
 
 export interface AppData {
@@ -31,7 +32,8 @@ const DEFAULT_SETTINGS: UserSettings = {
 	reminderDays: [1, 2, 3, 4, 5],
 	reminderMethod: 'both',
 	dailyGoal: 30,
-	sportTypes: ['running', 'yoga', 'strength', 'swimming', 'cycling', 'dance', 'other']
+	sportTypes: ['running', 'yoga', 'strength', 'swimming', 'cycling', 'dance', 'other'],
+	theme: 'dark'
 }
 
 const DEFAULT_DATA: AppData = {

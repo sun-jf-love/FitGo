@@ -1,122 +1,150 @@
 <template>
 	<view class="container">
-		<view class="bg-gradient"></view>
+		<view class="bg-gradient" :style="{ background: themeColors.bgGradient }"></view>
 		
-		<view class="glass-card section">
-			<text class="section-title">提醒设置</text>
+		<view class="glass-card section" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+			<text class="section-title" :style="{ color: themeColors.textMuted }">提醒设置</text>
 			
 			<view class="setting-item" @click="showTimePicker">
-				<text class="setting-label">提醒时间</text>
+				<text class="setting-label" :style="{ color: themeColors.text }">提醒时间</text>
 				<view class="setting-value">
-					<text class="setting-text">{{ settings.reminderTime }}</text>
-					<text class="setting-arrow">&gt;</text>
+					<text class="setting-text" :style="{ color: themeColors.textMuted }">{{ settings.reminderTime }}</text>
+					<text class="setting-arrow" :style="{ color: themeColors.textMuted }">&gt;</text>
 				</view>
 			</view>
 			
 			<view class="setting-item" @click="showDaysPicker">
-				<text class="setting-label">提醒日期</text>
+				<text class="setting-label" :style="{ color: themeColors.text }">提醒日期</text>
 				<view class="setting-value">
-					<text class="setting-text">{{ daysText }}</text>
-					<text class="setting-arrow">&gt;</text>
+					<text class="setting-text" :style="{ color: themeColors.textMuted }">{{ daysText }}</text>
+					<text class="setting-arrow" :style="{ color: themeColors.textMuted }">&gt;</text>
 				</view>
 			</view>
 			
 			<view class="setting-item">
-				<text class="setting-label">提醒方式</text>
+				<text class="setting-label" :style="{ color: themeColors.text }">提醒方式</text>
 				<view class="reminder-methods">
 					<view 
-						:class="['method-btn', 'method-green', { active: settings.reminderMethod === 'push' }]"
+						:class="['method-btn', { active: settings.reminderMethod === 'push' }]"
+						:style="{ background: settings.reminderMethod === 'push' ? themeColors.primaryGlow : themeColors.inputBg }"
 						@click="setReminderMethod('push')"
 					>
-						<text :class="['method-text', { active: settings.reminderMethod === 'push' }]">推送</text>
+						<text class="method-text" :style="{ color: settings.reminderMethod === 'push' ? themeColors.primary : themeColors.textMuted }">推送</text>
 					</view>
 					<view 
-						:class="['method-btn', 'method-blue', { active: settings.reminderMethod === 'inapp' }]"
+						:class="['method-btn', { active: settings.reminderMethod === 'inapp' }]"
+						:style="{ background: settings.reminderMethod === 'inapp' ? themeColors.primaryGlow : themeColors.inputBg }"
 						@click="setReminderMethod('inapp')"
 					>
-						<text :class="['method-text', { active: settings.reminderMethod === 'inapp' }]">弹窗</text>
+						<text class="method-text" :style="{ color: settings.reminderMethod === 'inapp' ? themeColors.primary : themeColors.textMuted }">弹窗</text>
 					</view>
 					<view 
-						:class="['method-btn', 'method-orange', { active: settings.reminderMethod === 'both' }]"
+						:class="['method-btn', { active: settings.reminderMethod === 'both' }]"
+						:style="{ background: settings.reminderMethod === 'both' ? themeColors.primaryGlow : themeColors.inputBg }"
 						@click="setReminderMethod('both')"
 					>
-						<text :class="['method-text', { active: settings.reminderMethod === 'both' }]">两者</text>
+						<text class="method-text" :style="{ color: settings.reminderMethod === 'both' ? themeColors.primary : themeColors.textMuted }">两者</text>
 					</view>
 				</view>
 			</view>
 		</view>
 		
-		<view class="glass-card section">
-			<text class="section-title">运动目标</text>
+		<view class="glass-card section" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+			<text class="section-title" :style="{ color: themeColors.textMuted }">运动目标</text>
 			
 			<view class="setting-item">
-				<text class="setting-label">每日目标时长</text>
+				<text class="setting-label" :style="{ color: themeColors.text }">每日目标时长</text>
 				<view class="goal-input">
-					<view class="glass-btn goal-btn" @click="decreaseGoal">
-						<text class="goal-btn-text">-</text>
+					<view class="goal-btn" :style="{ background: themeColors.inputBg, borderColor: themeColors.inputBorder }" @click="decreaseGoal">
+						<text class="goal-btn-text" :style="{ color: themeColors.text }">-</text>
 					</view>
-					<view class="goal-value-wrap">
+					<view class="goal-value-wrap" :style="{ background: themeColors.inputBg, borderColor: themeColors.inputBorder }">
 						<input 
 							class="goal-value" 
 							type="number" 
 							v-model="dailyGoalInput"
+							:style="{ color: themeColors.text, background: 'transparent' }"
 							@blur="saveGoal"
 						/>
 					</view>
-					<view class="glass-btn goal-btn" @click="increaseGoal">
-						<text class="goal-btn-text">+</text>
+					<view class="goal-btn" :style="{ background: themeColors.inputBg, borderColor: themeColors.inputBorder }" @click="increaseGoal">
+						<text class="goal-btn-text" :style="{ color: themeColors.text }">+</text>
 					</view>
-					<text class="goal-unit">分钟</text>
+					<text class="goal-unit" :style="{ color: themeColors.textMuted }">分钟</text>
 				</view>
 			</view>
 		</view>
 		
-		<view class="glass-card section">
-			<text class="section-title">数据管理</text>
+		<view class="glass-card section" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+			<text class="section-title" :style="{ color: themeColors.textMuted }">主题设置</text>
+			
+			<view class="setting-item">
+				<text class="setting-label" :style="{ color: themeColors.text }">主题模式</text>
+				<view class="theme-options">
+					<view 
+						:class="['theme-btn', { active: settings.theme === 'light' }]"
+						:style="{ background: settings.theme === 'light' ? themeColors.primaryGlow : themeColors.inputBg, borderColor: settings.theme === 'light' ? themeColors.primary : themeColors.inputBorder }"
+						@click="setTheme('light')"
+					>
+						<text class="theme-text" :style="{ color: settings.theme === 'light' ? themeColors.primary : themeColors.textMuted }">白天</text>
+					</view>
+					<view 
+						:class="['theme-btn', { active: settings.theme === 'dark' }]"
+						:style="{ background: settings.theme === 'dark' ? themeColors.primaryGlow : themeColors.inputBg, borderColor: settings.theme === 'dark' ? themeColors.primary : themeColors.inputBorder }"
+						@click="setTheme('dark')"
+					>
+						<text class="theme-text" :style="{ color: settings.theme === 'dark' ? themeColors.primary : themeColors.textMuted }">夜晚</text>
+					</view>
+				</view>
+			</view>
+		</view>
+		
+		<view class="glass-card section" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+			<text class="section-title" :style="{ color: themeColors.textMuted }">数据管理</text>
 			
 			<view class="setting-item" @click="exportData">
-				<text class="setting-label">导出数据</text>
+				<text class="setting-label" :style="{ color: themeColors.text }">导出数据</text>
 				<view class="setting-value">
-					<text class="setting-arrow">&gt;</text>
+					<text class="setting-arrow" :style="{ color: themeColors.textMuted }">&gt;</text>
 				</view>
 			</view>
 			
 			<view class="setting-item" @click="clearData">
-				<text class="setting-label-danger">清空数据</text>
+				<text class="setting-label-danger" :style="{ color: themeColors.error }">清空数据</text>
 				<view class="setting-value">
-					<text class="setting-arrow">&gt;</text>
+					<text class="setting-arrow" :style="{ color: themeColors.textMuted }">&gt;</text>
 				</view>
 			</view>
 		</view>
 		
-		<view class="glass-card section">
-			<text class="section-title">关于</text>
+		<view class="glass-card section" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+			<text class="section-title" :style="{ color: themeColors.textMuted }">关于</text>
 			
 			<view class="setting-item">
-				<text class="setting-label">版本</text>
+				<text class="setting-label" :style="{ color: themeColors.text }">版本</text>
 				<view class="setting-value">
-					<text class="setting-text">v1.0.0</text>
+					<text class="setting-text" :style="{ color: themeColors.textMuted }">v1.0.0</text>
 				</view>
 			</view>
 		</view>
 		
 		<view class="modal-mask" v-if="showTimeModal || showDaysModal" @click="closeAll">
-			<view class="modal-content" @click.stop>
+			<view class="modal-content" @click.stop :style="{ background: themeColors.modalBg, borderColor: themeColors.modalBorder }">
 				<view class="modal-header">
-					<text class="modal-cancel" @click="closeTimePicker">取消</text>
-					<text class="modal-title">{{ showTimeModal ? '选择时间' : '选择日期' }}</text>
-					<text class="modal-confirm" @click="showTimeModal ? confirmTime() : confirmDays()">确定</text>
+					<text class="modal-cancel" :style="{ color: themeColors.textMuted }" @click="closeTimePicker">取消</text>
+					<text class="modal-title" :style="{ color: themeColors.text }">{{ showTimeModal ? '选择时间' : '选择日期' }}</text>
+					<text class="modal-confirm" :style="{ color: themeColors.primary }" @click="showTimeModal ? confirmTime() : confirmDays()">确定</text>
 				</view>
 				
 				<picker-view v-if="showTimeModal" class="time-picker" :value="timePickerValue" @change="onTimeChange">
 					<picker-view-column>
 						<view v-for="(hour, index) in hours" :key="index" class="picker-item">
-							<text class="picker-item-text">{{ hour }}时</text>
+							<text class="picker-item-text" :style="{ color: themeColors.text }">{{ hour }}时</text>
 						</view>
 					</picker-view-column>
 					<picker-view-column>
 						<view v-for="(minute, index) in minutes" :key="index" class="picker-item">
-							<text class="picker-item-text">{{ minute }}分</text>
+							<text class="picker-item-text" :style="{ color: themeColors.text }">{{ minute }}分</text>
 						</view>
 					</picker-view-column>
 				</picker-view>
@@ -126,9 +154,10 @@
 						v-for="(day, index) in weekDays" 
 						:key="index"
 						:class="['day-option', 'day-color-' + (index % 4), { active: selectedDays.includes(index + 1) }]"
+						:style="{ background: selectedDays.includes(index + 1) ? themeColors.primaryGlow : themeColors.inputBg }"
 						@click="toggleDay(index + 1)"
 					>
-						<text :class="['day-text', { active: selectedDays.includes(index + 1) }]">{{ day }}</text>
+						<text class="day-text" :style="{ color: selectedDays.includes(index + 1) ? themeColors.primary : themeColors.textMuted }">{{ day }}</text>
 					</view>
 				</view>
 			</view>
@@ -138,18 +167,21 @@
 
 <script setup lang="uts">
 import { getSettings, saveSettings, exportData, type UserSettings } from '../../utils/storage.uts'
+import { getCurrentTheme, getThemeColors, type ThemeColors } from '../../utils/theme.uts'
 
 const settings = ref<UserSettings>({
 	reminderTime: '08:00',
 	reminderDays: [1, 2, 3, 4, 5],
 	reminderMethod: 'both',
 	dailyGoal: 30,
-	sportTypes: []
+	sportTypes: [],
+	theme: 'dark'
 })
 
 const dailyGoalInput = ref(30)
 const showTimeModal = ref(false)
 const showDaysModal = ref(false)
+const themeColors = ref<ThemeColors>(getThemeColors('dark'))
 
 const hours = ref<string[]>([])
 const minutes = ref<string[]>([])
@@ -174,6 +206,8 @@ function initSettings() {
 	timePickerValue.value = [parseInt(timeParts[0]), parseInt(timeParts[1])]
 	
 	selectedDays.value = [...data.reminderDays]
+	
+	themeColors.value = getThemeColors(data.theme)
 }
 
 const daysText = computed((): string => {
@@ -247,6 +281,13 @@ function confirmDays() {
 function setReminderMethod(method: 'push' | 'inapp' | 'both') {
 	settings.value.reminderMethod = method
 	saveSettings(settings.value)
+}
+
+function setTheme(theme: 'light' | 'dark') {
+	settings.value.theme = theme
+	saveSettings(settings.value)
+	themeColors.value = getThemeColors(theme)
+	uni.$emit('themeChange', theme)
 }
 
 function decreaseGoal() {
@@ -324,26 +365,15 @@ onShow(() => {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: linear-gradient(135deg, #10B981 0%, #059669 50%, #3B82F6 100%);
 	z-index: -1;
 }
 
 .glass-card {
-	background-color: rgba(255, 255, 255, 0.15);
 	border-radius: 20px;
 	border-width: 1px;
-	border-color: rgba(255, 255, 255, 0.3);
 	border-style: solid;
 	backdrop-filter: blur(10px);
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.glass-btn {
-	background-color: rgba(255, 255, 255, 0.2);
-	border-radius: 14px;
-	border-width: 1px;
-	border-color: rgba(255, 255, 255, 0.3);
-	border-style: solid;
 }
 
 .section {
@@ -354,7 +384,6 @@ onShow(() => {
 .section-title {
 	font-size: 14px;
 	font-weight: bold;
-	color: rgba(255, 255, 255, 0.7);
 	margin-bottom: 14px;
 }
 
@@ -364,7 +393,6 @@ onShow(() => {
 	align-items: center;
 	padding: 14px 0;
 	border-bottom-width: 1px;
-	border-bottom-color: rgba(255, 255, 255, 0.15);
 	border-bottom-style: solid;
 }
 
@@ -374,12 +402,10 @@ onShow(() => {
 
 .setting-label {
 	font-size: 15px;
-	color: #FFFFFF;
 }
 
 .setting-label-danger {
 	font-size: 15px;
-	color: #EF4444;
 }
 
 .setting-value {
@@ -389,13 +415,11 @@ onShow(() => {
 
 .setting-text {
 	font-size: 15px;
-	color: rgba(255, 255, 255, 0.8);
 	margin-right: 10px;
 }
 
 .setting-arrow {
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.5);
 }
 
 .reminder-methods {
@@ -406,31 +430,12 @@ onShow(() => {
 .method-btn {
 	padding: 8px 18px;
 	border-radius: 16px;
-}
-
-.method-green {
-	background-color: rgba(16, 185, 129, 0.2);
-}
-
-.method-blue {
-	background-color: rgba(59, 130, 246, 0.2);
-}
-
-.method-orange {
-	background-color: rgba(249, 115, 22, 0.2);
-}
-
-.method-btn.active {
-	background-color: rgba(255, 255, 255, 0.3);
+	border-width: 1px;
+	border-style: solid;
 }
 
 .method-text {
 	font-size: 13px;
-	color: rgba(255, 255, 255, 0.8);
-}
-
-.method-text.active {
-	color: #FFFFFF;
 	font-weight: bold;
 }
 
@@ -443,23 +448,26 @@ onShow(() => {
 .goal-btn {
 	width: 30px;
 	height: 30px;
+	border-radius: 14px;
 	align-items: center;
 	justify-content: center;
+	border-width: 1px;
+	border-style: solid;
 }
 
 .goal-btn-text {
 	font-size: 20px;
-	color: #FFFFFF;
 	font-weight: bold;
 }
 
 .goal-value-wrap {
 	width: 52px;
 	height: 30px;
-	background-color: rgba(255, 255, 255, 0.15);
 	border-radius: 10px;
 	align-items: center;
 	justify-content: center;
+	border-width: 1px;
+	border-style: solid;
 }
 
 .goal-value {
@@ -467,12 +475,27 @@ onShow(() => {
 	height: 30px;
 	text-align: center;
 	font-size: 14px;
-	color: #FFFFFF;
 }
 
 .goal-unit {
 	font-size: 13px;
-	color: rgba(255, 255, 255, 0.8);
+}
+
+.theme-options {
+	flex-direction: row;
+	gap: 12px;
+}
+
+.theme-btn {
+	padding: 10px 24px;
+	border-radius: 20px;
+	border-width: 1px;
+	border-style: solid;
+}
+
+.theme-text {
+	font-size: 14px;
+	font-weight: bold;
 }
 
 .modal-mask {
@@ -481,7 +504,7 @@ onShow(() => {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(0, 0, 0, 0.7);
 	align-items: flex-end;
 	justify-content: center;
 	z-index: 999;
@@ -489,8 +512,9 @@ onShow(() => {
 
 .modal-content {
 	width: 100%;
-	background-color: rgba(255, 255, 255, 0.95);
 	border-radius: 20px 20px 0 0;
+	border-width: 1px;
+	border-style: solid;
 }
 
 .modal-header {
@@ -499,25 +523,21 @@ onShow(() => {
 	align-items: center;
 	padding: 18px;
 	border-bottom-width: 1px;
-	border-bottom-color: rgba(0, 0, 0, 0.1);
 	border-bottom-style: solid;
 }
 
 .modal-cancel {
 	font-size: 15px;
-	color: #666666;
 }
 
 .modal-confirm {
 	font-size: 15px;
-	color: #10B981;
 	font-weight: bold;
 }
 
 .modal-title {
 	font-size: 16px;
 	font-weight: bold;
-	color: #333333;
 }
 
 .time-picker {
@@ -531,7 +551,6 @@ onShow(() => {
 
 .picker-item-text {
 	font-size: 16px;
-	color: #333333;
 }
 
 .days-options {
@@ -548,33 +567,8 @@ onShow(() => {
 	align-items: center;
 }
 
-.day-color-0 {
-	background-color: rgba(16, 185, 129, 0.2);
-}
-
-.day-color-1 {
-	background-color: rgba(59, 130, 246, 0.2);
-}
-
-.day-color-2 {
-	background-color: rgba(249, 115, 22, 0.2);
-}
-
-.day-color-3 {
-	background-color: rgba(239, 68, 68, 0.2);
-}
-
-.day-option.active {
-	background-color: rgba(255, 255, 255, 0.3);
-}
-
 .day-text {
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.9);
-}
-
-.day-text.active {
-	color: #FFFFFF;
 	font-weight: bold;
 }
 </style>

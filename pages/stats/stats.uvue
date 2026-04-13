@@ -1,51 +1,51 @@
 <template>
 	<view class="container">
-		<view class="bg-gradient"></view>
+		<view class="bg-gradient" :style="{ background: themeColors.bgGradient }"></view>
 		
-		<view class="glass-card tab-bar">
+		<view class="glass-card tab-bar" :style="{ background: themeColors.cardBg }">
 			<view 
 				:class="['tab-item', { active: activeTab === 'week' }]"
 				@click="switchTab('week')"
 			>
-				<text :class="['tab-text', { active: activeTab === 'week' }]">本周</text>
+				<text :class="['tab-text', { active: activeTab === 'week' }]" :style="{ color: activeTab === 'week' ? themeColors.primary : themeColors.textMuted }">本周</text>
 			</view>
 			<view 
 				:class="['tab-item', { active: activeTab === 'month' }]"
 				@click="switchTab('month')"
 			>
-				<text :class="['tab-text', { active: activeTab === 'month' }]">本月</text>
+				<text :class="['tab-text', { active: activeTab === 'month' }]" :style="{ color: activeTab === 'month' ? themeColors.primary : themeColors.textMuted }">本月</text>
 			</view>
 			<view 
 				:class="['tab-item', { active: activeTab === 'all' }]"
 				@click="switchTab('all')"
 			>
-				<text :class="['tab-text', { active: activeTab === 'all' }]">全部</text>
+				<text :class="['tab-text', { active: activeTab === 'all' }]" :style="{ color: activeTab === 'all' ? themeColors.primary : themeColors.textMuted }">全部</text>
 			</view>
 		</view>
 		
 		<view class="stats-card-row">
-			<view class="glass-card stats-card stat-green">
-				<text class="stats-value">{{ totalDuration }}</text>
-				<text class="stats-label">总时长(分钟)</text>
+			<view class="glass-card stats-card" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+				<text class="stats-value" :style="{ color: themeColors.primary }">{{ totalDuration }}</text>
+				<text class="stats-label" :style="{ color: themeColors.textMuted }">总时长(分钟)</text>
 			</view>
-			<view class="glass-card stats-card stat-orange">
-				<text class="stats-value">{{ totalCalories }}</text>
-				<text class="stats-label">消耗卡路里</text>
+			<view class="glass-card stats-card" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+				<text class="stats-value" :style="{ color: themeColors.warning }">{{ totalCalories }}</text>
+				<text class="stats-label" :style="{ color: themeColors.textMuted }">消耗卡路里</text>
 			</view>
 		</view>
 		<view class="stats-card-row">
-			<view class="glass-card stats-card stat-blue">
-				<text class="stats-value">{{ activeDays }}</text>
-				<text class="stats-label">运动天数</text>
+			<view class="glass-card stats-card" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+				<text class="stats-value" :style="{ color: themeColors.accent }">{{ activeDays }}</text>
+				<text class="stats-label" :style="{ color: themeColors.textMuted }">运动天数</text>
 			</view>
-			<view class="glass-card stats-card stat-red">
-				<text class="stats-value">{{ totalCount }}</text>
-				<text class="stats-label">运动次数</text>
+			<view class="glass-card stats-card" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+				<text class="stats-value" :style="{ color: themeColors.error }">{{ totalCount }}</text>
+				<text class="stats-label" :style="{ color: themeColors.textMuted }">运动次数</text>
 			</view>
 		</view>
 		
-		<view class="glass-card chart-card">
-			<text class="chart-title">运动时长趋势</text>
+		<view class="glass-card chart-card" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+			<text class="chart-title" :style="{ color: themeColors.text }">运动时长趋势</text>
 			<view class="chart-container">
 				<view class="chart-bars">
 					<view 
@@ -56,16 +56,16 @@
 						<view class="bar-container">
 							<view class="bar" :class="'bar-color-' + (index % 4)" :style="{ height: item.height + 'px' }"></view>
 						</view>
-						<text class="bar-label">{{ item.label }}</text>
+						<text class="bar-label" :style="{ color: themeColors.textMuted }">{{ item.label }}</text>
 					</view>
 				</view>
 			</view>
 		</view>
 		
-		<view class="glass-card records-card">
-			<text class="records-title">运动记录</text>
+		<view class="glass-card records-card" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+			<text class="records-title" :style="{ color: themeColors.text }">运动记录</text>
 			<view v-if="records.length === 0" class="empty-state">
-				<text class="empty-text">暂无运动记录</text>
+				<text class="empty-text" :style="{ color: themeColors.textMuted }">暂无运动记录</text>
 			</view>
 			<view 
 				v-for="(item, index) in records" 
@@ -76,12 +76,12 @@
 					<text class="icon-text">{{ getTypeIcon(item.type) }}</text>
 				</view>
 				<view class="record-info">
-					<text class="record-type">{{ item.typeName }}</text>
-					<text class="record-date">{{ item.date }}</text>
+					<text class="record-type" :style="{ color: themeColors.text }">{{ item.typeName }}</text>
+					<text class="record-date" :style="{ color: themeColors.textMuted }">{{ item.date }}</text>
 				</view>
 				<view class="record-stats">
-					<text class="record-duration">{{ item.duration }}分钟</text>
-					<text class="record-calories">{{ item.calories }}千卡</text>
+					<text class="record-duration" :style="{ color: themeColors.primary }">{{ item.duration }}分钟</text>
+					<text class="record-calories" :style="{ color: themeColors.textMuted }">{{ item.calories }}千卡</text>
 				</view>
 			</view>
 		</view>
@@ -90,6 +90,7 @@
 
 <script setup lang="uts">
 import { getRecords, type SportRecord, type SportType, sportTypeNames } from '../../utils/storage.uts'
+import { getCurrentTheme, getThemeColors, type ThemeColors } from '../../utils/theme.uts'
 
 type TabType = 'week' | 'month' | 'all'
 
@@ -100,6 +101,7 @@ const activeDays = ref(0)
 const totalCount = ref(0)
 const records = ref<SportRecord[]>([])
 const chartData = ref<{ label: string; height: number; value: number }[]>([])
+const themeColors = ref<ThemeColors>(getThemeColors('dark'))
 
 const typeIcons: Record<SportType, string> = {
 	running: '🏃',
@@ -109,6 +111,11 @@ const typeIcons: Record<SportType, string> = {
 	cycling: '🚴',
 	dance: '💃',
 	other: '⚡'
+}
+
+function loadTheme() {
+	const theme = getCurrentTheme()
+	themeColors.value = getThemeColors(theme)
 }
 
 function getTypeIcon(type: SportType): string {
@@ -229,6 +236,7 @@ function switchTab(tab: TabType) {
 }
 
 onShow(() => {
+	loadTheme()
 	calculateStats()
 	calculateChart()
 })
@@ -246,15 +254,12 @@ onShow(() => {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: linear-gradient(135deg, #10B981 0%, #059669 50%, #3B82F6 100%);
 	z-index: -1;
 }
 
 .glass-card {
-	background-color: rgba(255, 255, 255, 0.15);
 	border-radius: 20px;
 	border-width: 1px;
-	border-color: rgba(255, 255, 255, 0.3);
 	border-style: solid;
 	backdrop-filter: blur(10px);
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -274,16 +279,11 @@ onShow(() => {
 }
 
 .tab-item.active {
-	background-color: rgba(255, 255, 255, 0.25);
+	background-color: rgba(57, 255, 126, 0.15);
 }
 
 .tab-text {
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.7);
-}
-
-.tab-text.active {
-	color: #FFFFFF;
 	font-weight: bold;
 }
 
@@ -297,38 +297,18 @@ onShow(() => {
 	flex: 1;
 	padding: 18px;
 	align-items: center;
-}
-
-.stat-green {
-	background-color: rgba(16, 185, 129, 0.25);
-	border-color: rgba(16, 185, 129, 0.5);
-}
-
-.stat-blue {
-	background-color: rgba(59, 130, 246, 0.25);
-	border-color: rgba(59, 130, 246, 0.5);
-}
-
-.stat-orange {
-	background-color: rgba(249, 115, 22, 0.25);
-	border-color: rgba(249, 115, 22, 0.5);
-}
-
-.stat-red {
-	background-color: rgba(239, 68, 68, 0.25);
-	border-color: rgba(239, 68, 68, 0.5);
+	border-width: 1px;
+	border-style: solid;
 }
 
 .stats-value {
 	font-size: 26px;
 	font-weight: bold;
-	color: #FFFFFF;
 	margin-bottom: 4px;
 }
 
 .stats-label {
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.8);
 }
 
 .chart-card {
@@ -339,7 +319,6 @@ onShow(() => {
 .chart-title {
 	font-size: 16px;
 	font-weight: bold;
-	color: #FFFFFF;
 	margin-bottom: 18px;
 }
 
@@ -372,24 +351,23 @@ onShow(() => {
 }
 
 .bar-color-0 {
-	background: linear-gradient(180deg, #34D399 0%, #10B981 100%);
+	background: linear-gradient(180deg, #39FF7F 0%, #10B981 100%);
 }
 
 .bar-color-1 {
-	background: linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%);
+	background: linear-gradient(180deg, #00E5FF 0%, #0EA5E9 100%);
 }
 
 .bar-color-2 {
-	background: linear-gradient(180deg, #FB923C 0%, #F97316 100%);
+	background: linear-gradient(180deg, #FF9300 0%, #F97316 100%);
 }
 
 .bar-color-3 {
-	background: linear-gradient(180deg, #F87171 0%, #EF4444 100%);
+	background: linear-gradient(180deg, #FF4D4D 0%, #EF4444 100%);
 }
 
 .bar-label {
 	font-size: 10px;
-	color: rgba(255, 255, 255, 0.7);
 	margin-top: 8px;
 }
 
@@ -401,7 +379,6 @@ onShow(() => {
 .records-title {
 	font-size: 16px;
 	font-weight: bold;
-	color: #FFFFFF;
 	margin-bottom: 18px;
 }
 
@@ -412,7 +389,6 @@ onShow(() => {
 
 .empty-text {
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.6);
 }
 
 .record-item {
@@ -420,7 +396,6 @@ onShow(() => {
 	align-items: center;
 	padding: 14px 0;
 	border-bottom-width: 1px;
-	border-bottom-color: rgba(255, 255, 255, 0.15);
 	border-bottom-style: solid;
 }
 
@@ -434,19 +409,19 @@ onShow(() => {
 }
 
 .icon-color-0 {
-	background-color: rgba(16, 185, 129, 0.3);
+	background-color: rgba(57, 255, 126, 0.2);
 }
 
 .icon-color-1 {
-	background-color: rgba(59, 130, 246, 0.3);
+	background-color: rgba(0, 229, 255, 0.2);
 }
 
 .icon-color-2 {
-	background-color: rgba(249, 115, 22, 0.3);
+	background-color: rgba(255, 147, 0, 0.2);
 }
 
 .icon-color-3 {
-	background-color: rgba(239, 68, 68, 0.3);
+	background-color: rgba(255, 77, 77, 0.2);
 }
 
 .icon-text {
@@ -459,13 +434,11 @@ onShow(() => {
 
 .record-type {
 	font-size: 14px;
-	color: #FFFFFF;
 	font-weight: bold;
 }
 
 .record-date {
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.7);
 	margin-top: 4px;
 }
 
@@ -475,13 +448,11 @@ onShow(() => {
 
 .record-duration {
 	font-size: 14px;
-	color: #34D399;
 	font-weight: bold;
 }
 
 .record-calories {
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.7);
 	margin-top: 4px;
 }
 </style>

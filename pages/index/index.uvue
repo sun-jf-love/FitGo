@@ -1,38 +1,38 @@
 <template>
 	<view class="container">
-		<view class="bg-gradient"></view>
+		<view class="bg-gradient" :style="{ background: themeColors.bgGradient }"></view>
 		
 		<view class="header">
-			<text class="greeting">{{ greeting }}</text>
-			<text class="date">{{ todayDate }}</text>
+			<text class="greeting" :style="{ color: themeColors.text }">{{ greeting }}</text>
+			<text class="date" :style="{ color: themeColors.textMuted }">{{ todayDate }}</text>
 		</view>
 		
-		<view class="glass-card status-card">
+		<view class="glass-card status-card" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
 			<view class="status-circle">
-				<text class="status-number">{{ todayDuration }}</text>
-				<text class="status-unit">分钟</text>
+				<text class="status-number" :style="{ color: themeColors.primary, textShadow: '0 0 20px ' + themeColors.primaryGlow }">{{ todayDuration }}</text>
+				<text class="status-unit" :style="{ color: themeColors.textSecondary }">分钟</text>
 			</view>
-			<text class="status-label">今日运动时长</text>
+			<text class="status-label" :style="{ color: themeColors.textSecondary }">今日运动时长</text>
 			<view class="progress-bar">
-				<view class="progress-fill" :style="{ width: progressWidth }"></view>
+				<view class="progress-fill" :style="{ width: progressWidth, background: themeColors.progressGradient }"></view>
 			</view>
-			<text class="goal-text">目标: {{ dailyGoal }}分钟</text>
+			<text class="goal-text" :style="{ color: themeColors.textMuted }">目标: {{ dailyGoal }}分钟</text>
 		</view>
 		
 		<view class="stats-row">
-			<view class="glass-card stat-item stat-green">
-				<text class="stat-number">{{ weekDays }}</text>
-				<text class="stat-label">本周运动天数</text>
+			<view class="glass-card stat-item" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+				<text class="stat-number" :style="{ color: themeColors.text }">{{ weekDays }}</text>
+				<text class="stat-label" :style="{ color: themeColors.textMuted }">本周运动天数</text>
 			</view>
-			<view class="glass-card stat-item stat-blue">
-				<text class="stat-number">{{ streakDays }}</text>
-				<text class="stat-label">连续打卡天数</text>
+			<view class="glass-card stat-item" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
+				<text class="stat-number" :style="{ color: themeColors.text }">{{ streakDays }}</text>
+				<text class="stat-label" :style="{ color: themeColors.textMuted }">连续打卡天数</text>
 			</view>
 		</view>
 		
-		<view class="glass-card quick-actions">
+		<view class="glass-card quick-actions" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
 			<view class="action-title">
-				<text class="action-title-text">快速记录</text>
+				<text class="action-title-text" :style="{ color: themeColors.text }">快速记录</text>
 			</view>
 			<view class="sport-types">
 				<view 
@@ -44,37 +44,38 @@
 					<view class="sport-icon-wrap">
 						<text class="sport-icon">{{ item.icon }}</text>
 					</view>
-					<text class="sport-name">{{ item.name }}</text>
+					<text class="sport-name" :style="{ color: themeColors.textSecondary }">{{ item.name }}</text>
 				</view>
 			</view>
 		</view>
 		
-		<view class="glass-card today-records">
+		<view class="glass-card today-records" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
 			<view class="section-title">
-				<text class="section-title-text">今日运动记录</text>
+				<text class="section-title-text" :style="{ color: themeColors.text }">今日运动记录</text>
 			</view>
-			<text v-if="todayRecords.length === 0" class="empty-text">暂无记录</text>
+			<text v-if="todayRecords.length === 0" class="empty-text" :style="{ color: themeColors.textMuted }">暂无记录</text>
 			<block v-for="(item, index) in todayRecords" :key="index">
 				<view class="record-item">
 					<view class="record-left">
-						<text class="record-type">{{ item.typeName }}</text>
-						<text class="record-duration">{{ item.duration }}分钟</text>
+						<text class="record-type" :style="{ color: themeColors.text }">{{ item.typeName }}</text>
+						<text class="record-duration" :style="{ color: themeColors.primary }">{{ item.duration }}分钟</text>
 					</view>
 					<view class="record-right">
-						<text class="record-time-text">{{ formatTime(item.createdAt) }}</text>
+						<text class="record-time-text" :style="{ color: themeColors.textMuted }">{{ formatTime(item.createdAt) }}</text>
 					</view>
 				</view>
 			</block>
 		</view>
 		
-		<view class="glass-card record-btn" @click="goToRecordPage">
-			<text class="record-btn-text">+ 记录运动</text>
+		<view class="glass-card record-btn" :style="{ background: themeColors.buttonGradient }" @click="goToRecordPage">
+			<text class="record-btn-text" :style="{ color: themeColors.buttonText }">+ 记录运动</text>
 		</view>
 	</view>
 </template>
 
 <script setup lang="uts">
 import { getTodayDuration, getWeekRecords, getStreakDays, getTodayRecord, getSettings, type SportRecord, addTestRecord } from '../../utils/storage.uts'
+import { getCurrentTheme, getThemeColors, type ThemeColors } from '../../utils/theme.uts'
 
 const greeting = ref('早上好')
 const todayDate = ref('')
@@ -85,6 +86,7 @@ const streakDays = ref(0)
 const todayRecords = ref<SportRecord[]>([])
 const progressWidth = ref('0%')
 const isFirstLoad = ref(true)
+const themeColors = ref<ThemeColors>(getThemeColors('dark'))
 
 const sportTypes = ref([
 	{ type: 'running', name: '跑步', icon: '🏃' },
@@ -159,10 +161,22 @@ function goToRecordPage() {
 	})
 }
 
+function loadTheme() {
+	const theme = getCurrentTheme()
+	themeColors.value = getThemeColors(theme)
+}
+
 onShow(() => {
 	updateDateInfo()
 	loadData()
 	getTodayRecord()
+	loadTheme()
+})
+
+onMounted(() => {
+	uni.$on('themeChange', (theme: string) => {
+		themeColors.value = getThemeColors(theme as 'light' | 'dark')
+	})
 	if (isFirstLoad.value) {
 		isFirstLoad.value = false
 		const records = getTodayRecord()
@@ -187,15 +201,12 @@ onShow(() => {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: linear-gradient(135deg, #10B981 0%, #059669 50%, #3B82F6 100%);
 	z-index: -1;
 }
 
 .glass-card {
-	background-color: rgba(255, 255, 255, 0.15);
 	border-radius: 20px;
 	border-width: 1px;
-	border-color: rgba(255, 255, 255, 0.3);
 	border-style: solid;
 	backdrop-filter: blur(10px);
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -209,13 +220,10 @@ onShow(() => {
 .greeting {
 	font-size: 32px;
 	font-weight: bold;
-	color: #FFFFFF;
-	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .date {
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.8);
 	margin-top: 4px;
 }
 
@@ -233,26 +241,21 @@ onShow(() => {
 .status-number {
 	font-size: 56px;
 	font-weight: bold;
-	color: #FFFFFF;
-	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .status-unit {
 	font-size: 18px;
-	color: rgba(255, 255, 255, 0.8);
 	margin-top: 4px;
 }
 
 .status-label {
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.9);
 	margin-bottom: 16px;
 }
 
 .progress-bar {
 	width: 100%;
 	height: 8px;
-	background-color: rgba(255, 255, 255, 0.2);
 	border-radius: 4px;
 	overflow: hidden;
 	margin-bottom: 8px;
@@ -260,13 +263,11 @@ onShow(() => {
 
 .progress-fill {
 	height: 100%;
-	background: linear-gradient(90deg, #34D399 0%, #10B981 100%);
 	border-radius: 4px;
 }
 
 .goal-text {
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.7);
 }
 
 .stats-row {
@@ -281,26 +282,13 @@ onShow(() => {
 	align-items: center;
 }
 
-.stat-green {
-	background-color: rgba(16, 185, 129, 0.2);
-	border-color: rgba(16, 185, 129, 0.4);
-}
-
-.stat-blue {
-	background-color: rgba(59, 130, 246, 0.2);
-	border-color: rgba(59, 130, 246, 0.4);
-}
-
 .stat-number {
 	font-size: 28px;
 	font-weight: bold;
-	color: #FFFFFF;
-	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .stat-label {
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.8);
 	margin-top: 4px;
 }
 
@@ -316,7 +304,6 @@ onShow(() => {
 .action-title-text {
 	font-size: 18px;
 	font-weight: bold;
-	color: #FFFFFF;
 }
 
 .sport-types {
@@ -342,23 +329,23 @@ onShow(() => {
 }
 
 .sport-color-0 .sport-icon-wrap {
-	background-color: rgba(16, 185, 129, 0.3);
-	border-color: rgba(16, 185, 129, 0.5);
+	background-color: rgba(57, 255, 126, 0.2);
+	border-color: rgba(57, 255, 126, 0.4);
 }
 
 .sport-color-1 .sport-icon-wrap {
-	background-color: rgba(59, 130, 246, 0.3);
-	border-color: rgba(59, 130, 246, 0.5);
+	background-color: rgba(0, 229, 255, 0.2);
+	border-color: rgba(0, 229, 255, 0.4);
 }
 
 .sport-color-2 .sport-icon-wrap {
-	background-color: rgba(249, 115, 22, 0.3);
-	border-color: rgba(249, 115, 22, 0.5);
+	background-color: rgba(255, 147, 0, 0.2);
+	border-color: rgba(255, 147, 0, 0.4);
 }
 
 .sport-color-3 .sport-icon-wrap {
-	background-color: rgba(239, 68, 68, 0.3);
-	border-color: rgba(239, 68, 68, 0.5);
+	background-color: rgba(255, 77, 77, 0.2);
+	border-color: rgba(255, 77, 77, 0.4);
 }
 
 .sport-icon {
@@ -367,7 +354,6 @@ onShow(() => {
 
 .sport-name {
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.9);
 }
 
 .today-records {
@@ -382,12 +368,10 @@ onShow(() => {
 .section-title-text {
 	font-size: 18px;
 	font-weight: bold;
-	color: #FFFFFF;
 }
 
 .empty-text {
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.6);
 	padding: 20px 0;
 	align-items: center;
 }
@@ -398,7 +382,6 @@ onShow(() => {
 	align-items: center;
 	padding: 14px 0;
 	border-bottom-width: 1px;
-	border-bottom-color: rgba(255, 255, 255, 0.15);
 	border-bottom-style: solid;
 }
 
@@ -408,33 +391,24 @@ onShow(() => {
 
 .record-type {
 	font-size: 15px;
-	color: #FFFFFF;
 }
 
 .record-duration {
 	font-size: 13px;
-	color: #34D399;
 	margin-top: 4px;
-}
-
-.record-right {
-	
 }
 
 .record-time-text {
 	font-size: 13px;
-	color: rgba(255, 255, 255, 0.7);
 }
 
 .record-btn {
 	margin: 0 16px 24px 16px;
 	padding: 16px;
 	align-items: center;
-	background-color: rgba(16, 185, 129, 0.4);
 }
 
 .record-btn-text {
-	color: #FFFFFF;
 	font-size: 18px;
 	font-weight: bold;
 }

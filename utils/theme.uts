@@ -1,0 +1,80 @@
+export type ThemeType = 'light' | 'dark'
+
+export interface ThemeColors {
+	bgGradient: string
+	cardBg: string
+	cardBorder: string
+	text: string
+	textSecondary: string
+	textMuted: string
+	primary: string
+	primaryGlow: string
+	accent: string
+	success: string
+	warning: string
+	error: string
+	progressGradient: string
+	buttonGradient: string
+	buttonText: string
+	inputBg: string
+	inputBorder: string
+	modalBg: string
+	modalBorder: string
+}
+
+export const lightTheme: ThemeColors = {
+	bgGradient: 'linear-gradient(180deg, #FFFFFF 0%, #F0F4FF 50%, #E8F4FF 100%)',
+	cardBg: 'rgba(255, 255, 255, 0.7)',
+	cardBorder: 'rgba(0, 0, 0, 0.08)',
+	text: '#1A1A2E',
+	textSecondary: '#333333',
+	textMuted: '#666666',
+	primary: '#10B981',
+	primaryGlow: 'rgba(16, 185, 129, 0.3)',
+	accent: '#3B82F6',
+	success: '#10B981',
+	warning: '#F97316',
+	error: '#EF4444',
+	progressGradient: 'linear-gradient(90deg, #10B981 0%, #3B82F6 100%)',
+	buttonGradient: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
+	buttonText: '#FFFFFF',
+	inputBg: 'rgba(0, 0, 0, 0.05)',
+	inputBorder: 'rgba(0, 0, 0, 0.1)',
+	modalBg: '#FFFFFF',
+	modalBorder: 'rgba(0, 0, 0, 0.1)'
+}
+
+export const darkTheme: ThemeColors = {
+	bgGradient: 'linear-gradient(180deg, #0D0D0D 0%, #1A1A2E 50%, #16213E 100%)',
+	cardBg: 'rgba(255, 255, 255, 0.08)',
+	cardBorder: 'rgba(255, 255, 255, 0.12)',
+	text: '#FFFFFF',
+	textSecondary: 'rgba(255, 255, 255, 0.9)',
+	textMuted: 'rgba(255, 255, 255, 0.6)',
+	primary: '#39FF7F',
+	primaryGlow: 'rgba(57, 255, 127, 0.5)',
+	accent: '#00E5FF',
+	success: '#39FF7F',
+	warning: '#FF9300',
+	error: '#FF4D4D',
+	progressGradient: 'linear-gradient(90deg, #39FF7F 0%, #00E5FF 100%)',
+	buttonGradient: 'linear-gradient(135deg, #39FF7F 0%, #00E5FF 100%)',
+	buttonText: '#0D0D0D',
+	inputBg: 'rgba(255, 255, 255, 0.08)',
+	inputBorder: 'rgba(255, 255, 255, 0.12)',
+	modalBg: '#1A1A2E',
+	modalBorder: 'rgba(255, 255, 255, 0.1)'
+}
+
+export function getThemeColors(theme: ThemeType): ThemeColors {
+	return theme === 'light' ? lightTheme : darkTheme
+}
+
+export function getCurrentTheme(): ThemeType {
+	const settings = uni.getStorageSync('fitgo_data')
+	if (settings != null && settings != '') {
+		const data = settings as { settings?: { theme?: ThemeType } }
+		return data.settings?.theme || 'dark'
+	}
+	return 'dark'
+}

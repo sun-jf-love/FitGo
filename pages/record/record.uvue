@@ -1,10 +1,10 @@
 <template>
 	<view class="container">
-		<view class="bg-gradient"></view>
+		<view class="bg-gradient" :style="{ background: themeColors.bgGradient }"></view>
 		
-		<view class="glass-card form-card">
+		<view class="glass-card form-card" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
 			<view class="form-item">
-				<text class="form-label">运动类型</text>
+				<text class="form-label" :style="{ color: themeColors.text }">运动类型</text>
 				<view class="type-selector">
 					<view 
 						v-for="(item, index) in sportTypes" 
@@ -12,74 +12,77 @@
 						:class="['type-option', 'type-color-' + (index % 4), { active: selectedType === item.type }]"
 						@click="selectType(item.type)"
 					>
-						<view class="type-icon-wrap" :class="'icon-bg-' + (index % 4)">
+						<view class="type-icon-wrap">
 							<text class="type-icon">{{ item.icon }}</text>
 						</view>
-						<text :class="['type-name', { active: selectedType === item.type }]">{{ item.name }}</text>
+						<text :class="['type-name', { active: selectedType === item.type }]" :style="{ color: selectedType === item.type ? themeColors.primary : themeColors.textMuted }">{{ item.name }}</text>
 					</view>
 				</view>
 			</view>
 			
 			<view class="form-item">
-				<text class="form-label">运动时长 (分钟)</text>
+				<text class="form-label" :style="{ color: themeColors.text }">运动时长 (分钟)</text>
 				<view class="duration-input">
-					<view class="glass-btn duration-btn" @click="decreaseDuration">
-						<text class="btn-text">-</text>
+					<view class="duration-btn" :style="{ background: themeColors.inputBg, borderColor: themeColors.inputBorder }" @click="decreaseDuration">
+						<text class="btn-text" :style="{ color: themeColors.text }">-</text>
 					</view>
-					<view class="duration-value-wrap">
+					<view class="duration-value-wrap" :style="{ background: themeColors.inputBg, borderColor: themeColors.inputBorder }">
 						<input 
 							class="duration-value" 
 							type="number" 
 							v-model="duration"
+							:style="{ color: themeColors.text }"
 							@input="onDurationInput"
 						/>
 					</view>
-					<view class="glass-btn duration-btn" @click="increaseDuration">
-						<text class="btn-text">+</text>
+					<view class="duration-btn" :style="{ background: themeColors.inputBg, borderColor: themeColors.inputBorder }" @click="increaseDuration">
+						<text class="btn-text" :style="{ color: themeColors.text }">+</text>
 					</view>
 				</view>
 				<view class="quick-duration">
 					<view 
 						v-for="(item, index) in quickDurations" 
 						:key="index"
-						class="quick-item"
-						:class="'quick-color-' + (index % 4)"
+						:class="['quick-item', 'quick-color-' + (index % 4)]"
 						@click="setDuration(item)"
 					>
-						<text class="quick-text">{{ item }}分钟</text>
+						<text class="quick-text" :style="{ color: themeColors.textSecondary }">{{ item }}分钟</text>
 					</view>
 				</view>
 			</view>
 			
 			<view class="form-item">
-				<text class="form-label">消耗卡路里 (可选)</text>
+				<text class="form-label" :style="{ color: themeColors.text }">消耗卡路里 (可选)</text>
 				<input 
 					class="glass-input calories-input" 
 					type="number" 
 					v-model="calories" 
+					:style="{ background: themeColors.inputBg, borderColor: themeColors.inputBorder, color: themeColors.text }"
 					placeholder="请输入估计的卡路里"
 				/>
 			</view>
 			
 			<view class="form-item">
-				<text class="form-label">备注 (可选)</text>
+				<text class="form-label" :style="{ color: themeColors.text }">备注 (可选)</text>
 				<input 
 					class="glass-input remark-input" 
 					type="text" 
 					v-model="remark" 
+					:style="{ background: themeColors.inputBg, borderColor: themeColors.inputBorder, color: themeColors.text }"
 					placeholder="添加备注..."
 				/>
 			</view>
 		</view>
 		
-		<view class="glass-btn save-btn" @click="saveRecord">
-			<text class="save-btn-text">保存记录</text>
+		<view class="save-btn" :style="{ background: themeColors.buttonGradient }" @click="saveRecord">
+			<text class="save-btn-text" :style="{ color: themeColors.buttonText }">保存记录</text>
 		</view>
 	</view>
 </template>
 
 <script setup lang="uts">
 import { addRecord, getTodayDateString, sportTypeNames, type SportType } from '../../utils/storage.uts'
+import { getCurrentTheme, getThemeColors, type ThemeColors } from '../../utils/theme.uts'
 
 const sportTypes = ref([
 	{ type: 'running' as SportType, name: '跑步', icon: '🏃' },
@@ -97,11 +100,22 @@ const selectedType = ref<SportType>('running')
 const duration = ref(30)
 const calories = ref('')
 const remark = ref('')
+const themeColors = ref<ThemeColors>(getThemeColors('dark'))
+
+function loadTheme() {
+	const theme = getCurrentTheme()
+	themeColors.value = getThemeColors(theme)
+}
 
 onLoad((options: OnLoadOptions) => {
+	loadTheme()
 	if (options != null && options.type != null) {
 		selectedType.value = options.type as SportType
 	}
+})
+
+onShow(() => {
+	loadTheme()
 })
 
 function selectType(type: SportType) {
@@ -172,34 +186,15 @@ function saveRecord() {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: linear-gradient(135deg, #10B981 0%, #059669 50%, #3B82F6 100%);
 	z-index: -1;
 }
 
 .glass-card {
-	background-color: rgba(255, 255, 255, 0.15);
 	border-radius: 20px;
 	border-width: 1px;
-	border-color: rgba(255, 255, 255, 0.3);
 	border-style: solid;
 	backdrop-filter: blur(10px);
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.glass-btn {
-	background-color: rgba(255, 255, 255, 0.2);
-	border-radius: 16px;
-	border-width: 1px;
-	border-color: rgba(255, 255, 255, 0.3);
-	border-style: solid;
-}
-
-.glass-input {
-	background-color: rgba(255, 255, 255, 0.15);
-	border-radius: 12px;
-	border-width: 1px;
-	border-color: rgba(255, 255, 255, 0.2);
-	border-style: solid;
 }
 
 .form-card {
@@ -218,7 +213,6 @@ function saveRecord() {
 .form-label {
 	font-size: 15px;
 	font-weight: bold;
-	color: #FFFFFF;
 	margin-bottom: 14px;
 }
 
@@ -245,27 +239,27 @@ function saveRecord() {
 }
 
 .type-color-0 .type-icon-wrap {
-	background-color: rgba(16, 185, 129, 0.2);
+	background-color: rgba(57, 255, 126, 0.15);
 	border-color: transparent;
 }
 
 .type-color-1 .type-icon-wrap {
-	background-color: rgba(59, 130, 246, 0.2);
+	background-color: rgba(0, 229, 255, 0.15);
 	border-color: transparent;
 }
 
 .type-color-2 .type-icon-wrap {
-	background-color: rgba(249, 115, 22, 0.2);
+	background-color: rgba(255, 147, 0, 0.15);
 	border-color: transparent;
 }
 
 .type-color-3 .type-icon-wrap {
-	background-color: rgba(239, 68, 68, 0.2);
+	background-color: rgba(255, 77, 77, 0.15);
 	border-color: transparent;
 }
 
 .type-option.active .type-icon-wrap {
-	border-color: #FFFFFF;
+	border-color: #39FF7F;
 }
 
 .type-icon {
@@ -274,12 +268,6 @@ function saveRecord() {
 
 .type-name {
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.8);
-}
-
-.type-name.active {
-	color: #FFFFFF;
-	font-weight: bold;
 }
 
 .duration-input {
@@ -293,23 +281,26 @@ function saveRecord() {
 .duration-btn {
 	width: 48px;
 	height: 48px;
+	border-radius: 14px;
 	align-items: center;
 	justify-content: center;
+	border-width: 1px;
+	border-style: solid;
 }
 
 .btn-text {
 	font-size: 26px;
-	color: #FFFFFF;
 	font-weight: bold;
 }
 
 .duration-value-wrap {
 	width: 100px;
 	height: 48px;
-	background-color: rgba(255, 255, 255, 0.15);
 	border-radius: 14px;
 	align-items: center;
 	justify-content: center;
+	border-width: 1px;
+	border-style: solid;
 }
 
 .duration-value {
@@ -318,7 +309,6 @@ function saveRecord() {
 	text-align: center;
 	font-size: 22px;
 	font-weight: bold;
-	color: #FFFFFF;
 }
 
 .quick-duration {
@@ -334,47 +324,43 @@ function saveRecord() {
 }
 
 .quick-color-0 {
-	background-color: rgba(16, 185, 129, 0.3);
+	background-color: rgba(57, 255, 126, 0.2);
 }
 
 .quick-color-1 {
-	background-color: rgba(59, 130, 246, 0.3);
+	background-color: rgba(0, 229, 255, 0.2);
 }
 
 .quick-color-2 {
-	background-color: rgba(249, 115, 22, 0.3);
+	background-color: rgba(255, 147, 0, 0.2);
 }
 
 .quick-color-3 {
-	background-color: rgba(239, 68, 68, 0.3);
+	background-color: rgba(255, 77, 77, 0.2);
 }
 
 .quick-text {
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.9);
 }
 
-.calories-input, .remark-input {
+.glass-input {
 	width: 100%;
 	height: 48px;
+	border-radius: 12px;
+	border-width: 1px;
+	border-style: solid;
 	padding: 0 16px;
 	font-size: 14px;
-	color: #FFFFFF;
-}
-
-.calories-input::placeholder, .remark-input::placeholder {
-	color: rgba(255, 255, 255, 0.5);
 }
 
 .save-btn {
 	margin: 0 16px 24px 16px;
 	padding: 16px;
 	align-items: center;
-	background-color: rgba(16, 185, 129, 0.5);
+	border-radius: 20px;
 }
 
 .save-btn-text {
-	color: #FFFFFF;
 	font-size: 18px;
 	font-weight: bold;
 }
