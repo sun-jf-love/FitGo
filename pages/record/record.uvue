@@ -1,0 +1,381 @@
+<template>
+	<view class="container">
+		<view class="bg-gradient"></view>
+		
+		<view class="glass-card form-card">
+			<view class="form-item">
+				<text class="form-label">运动类型</text>
+				<view class="type-selector">
+					<view 
+						v-for="(item, index) in sportTypes" 
+						:key="index"
+						:class="['type-option', 'type-color-' + (index % 4), { active: selectedType === item.type }]"
+						@click="selectType(item.type)"
+					>
+						<view class="type-icon-wrap" :class="'icon-bg-' + (index % 4)">
+							<text class="type-icon">{{ item.icon }}</text>
+						</view>
+						<text :class="['type-name', { active: selectedType === item.type }]">{{ item.name }}</text>
+					</view>
+				</view>
+			</view>
+			
+			<view class="form-item">
+				<text class="form-label">运动时长 (分钟)</text>
+				<view class="duration-input">
+					<view class="glass-btn duration-btn" @click="decreaseDuration">
+						<text class="btn-text">-</text>
+					</view>
+					<view class="duration-value-wrap">
+						<input 
+							class="duration-value" 
+							type="number" 
+							v-model="duration"
+							@input="onDurationInput"
+						/>
+					</view>
+					<view class="glass-btn duration-btn" @click="increaseDuration">
+						<text class="btn-text">+</text>
+					</view>
+				</view>
+				<view class="quick-duration">
+					<view 
+						v-for="(item, index) in quickDurations" 
+						:key="index"
+						class="quick-item"
+						:class="'quick-color-' + (index % 4)"
+						@click="setDuration(item)"
+					>
+						<text class="quick-text">{{ item }}分钟</text>
+					</view>
+				</view>
+			</view>
+			
+			<view class="form-item">
+				<text class="form-label">消耗卡路里 (可选)</text>
+				<input 
+					class="glass-input calories-input" 
+					type="number" 
+					v-model="calories" 
+					placeholder="请输入估计的卡路里"
+				/>
+			</view>
+			
+			<view class="form-item">
+				<text class="form-label">备注 (可选)</text>
+				<input 
+					class="glass-input remark-input" 
+					type="text" 
+					v-model="remark" 
+					placeholder="添加备注..."
+				/>
+			</view>
+		</view>
+		
+		<view class="glass-btn save-btn" @click="saveRecord">
+			<text class="save-btn-text">保存记录</text>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+import { addRecord, getTodayDateString, sportTypeNames, type SportType } from '../../utils/storage.uts'
+
+const sportTypes = ref([
+	{ type: 'running' as SportType, name: '跑步', icon: '🏃' },
+	{ type: 'yoga' as SportType, name: '瑜伽', icon: '🧘' },
+	{ type: 'strength' as SportType, name: '力量训练', icon: '💪' },
+	{ type: 'swimming' as SportType, name: '游泳', icon: '🏊' },
+	{ type: 'cycling' as SportType, name: '骑行', icon: '🚴' },
+	{ type: 'dance' as SportType, name: '健身操', icon: '💃' },
+	{ type: 'other' as SportType, name: '其他', icon: '⚡' }
+])
+
+const quickDurations = ref([15, 30, 45, 60, 90])
+
+const selectedType = ref<SportType>('running')
+const duration = ref(30)
+const calories = ref('')
+const remark = ref('')
+
+onLoad((options: OnLoadOptions) => {
+	if (options != null && options.type != null) {
+		selectedType.value = options.type as SportType
+	}
+})
+
+function selectType(type: SportType) {
+	selectedType.value = type
+}
+
+function decreaseDuration() {
+	if (duration.value > 1) {
+		duration.value--
+	}
+}
+
+function increaseDuration() {
+	duration.value++
+}
+
+function onDurationInput(e: InputEvent) {
+	const val = parseInt(e.detail.value as string)
+	if (!isNaN(val) && val > 0) {
+		duration.value = val
+	}
+}
+
+function setDuration(minutes: number) {
+	duration.value = minutes
+}
+
+function saveRecord() {
+	if (duration.value <= 0) {
+		uni.showToast({
+			title: '请输入有效的运动时长',
+			icon: 'none'
+		})
+		return
+	}
+	
+	const caloriesNum = calories.value != '' ? parseInt(calories.value) : Math.round(duration.value * 7)
+	
+	addRecord({
+		type: selectedType.value,
+		typeName: sportTypeNames[selectedType.value],
+		duration: duration.value,
+		calories: isNaN(caloriesNum) ? 0 : caloriesNum,
+		date: getTodayDateString(),
+		remark: remark.value
+	})
+	
+	uni.showToast({
+		title: '记录成功',
+		icon: 'success'
+	})
+	
+	setTimeout(() => {
+		uni.navigateBack()
+	}, 1500)
+}
+</script>
+
+<style>
+.container {
+	flex: 1;
+	overflow-y: scroll;
+}
+
+.bg-gradient {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(135deg, #10B981 0%, #059669 50%, #3B82F6 100%);
+	z-index: -1;
+}
+
+.glass-card {
+	background-color: rgba(255, 255, 255, 0.15);
+	border-radius: 20px;
+	border-width: 1px;
+	border-color: rgba(255, 255, 255, 0.3);
+	border-style: solid;
+	backdrop-filter: blur(10px);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-btn {
+	background-color: rgba(255, 255, 255, 0.2);
+	border-radius: 16px;
+	border-width: 1px;
+	border-color: rgba(255, 255, 255, 0.3);
+	border-style: solid;
+}
+
+.glass-input {
+	background-color: rgba(255, 255, 255, 0.15);
+	border-radius: 12px;
+	border-width: 1px;
+	border-color: rgba(255, 255, 255, 0.2);
+	border-style: solid;
+}
+
+.form-card {
+	margin: 16px;
+	padding: 20px;
+}
+
+.form-item {
+	margin-bottom: 24px;
+}
+
+.form-item:last-child {
+	margin-bottom: 0;
+}
+
+.form-label {
+	font-size: 15px;
+	font-weight: bold;
+	color: #FFFFFF;
+	margin-bottom: 14px;
+}
+
+.type-selector {
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.type-option {
+	width: 25%;
+	padding: 10px 0;
+	align-items: center;
+}
+
+.type-icon-wrap {
+	width: 48px;
+	height: 48px;
+	border-radius: 14px;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 8px;
+	border-width: 1px;
+	border-style: solid;
+}
+
+.type-color-0 .type-icon-wrap {
+	background-color: rgba(16, 185, 129, 0.2);
+	border-color: transparent;
+}
+
+.type-color-1 .type-icon-wrap {
+	background-color: rgba(59, 130, 246, 0.2);
+	border-color: transparent;
+}
+
+.type-color-2 .type-icon-wrap {
+	background-color: rgba(249, 115, 22, 0.2);
+	border-color: transparent;
+}
+
+.type-color-3 .type-icon-wrap {
+	background-color: rgba(239, 68, 68, 0.2);
+	border-color: transparent;
+}
+
+.type-option.active .type-icon-wrap {
+	border-color: #FFFFFF;
+}
+
+.type-icon {
+	font-size: 24px;
+}
+
+.type-name {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.8);
+}
+
+.type-name.active {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+.duration-input {
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 20px;
+	margin-bottom: 18px;
+}
+
+.duration-btn {
+	width: 48px;
+	height: 48px;
+	align-items: center;
+	justify-content: center;
+}
+
+.btn-text {
+	font-size: 26px;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+.duration-value-wrap {
+	width: 100px;
+	height: 48px;
+	background-color: rgba(255, 255, 255, 0.15);
+	border-radius: 14px;
+	align-items: center;
+	justify-content: center;
+}
+
+.duration-value {
+	width: 100px;
+	height: 48px;
+	text-align: center;
+	font-size: 22px;
+	font-weight: bold;
+	color: #FFFFFF;
+}
+
+.quick-duration {
+	flex-direction: row;
+	gap: 10px;
+}
+
+.quick-item {
+	flex: 1;
+	border-radius: 10px;
+	padding: 10px;
+	align-items: center;
+}
+
+.quick-color-0 {
+	background-color: rgba(16, 185, 129, 0.3);
+}
+
+.quick-color-1 {
+	background-color: rgba(59, 130, 246, 0.3);
+}
+
+.quick-color-2 {
+	background-color: rgba(249, 115, 22, 0.3);
+}
+
+.quick-color-3 {
+	background-color: rgba(239, 68, 68, 0.3);
+}
+
+.quick-text {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.calories-input, .remark-input {
+	width: 100%;
+	height: 48px;
+	padding: 0 16px;
+	font-size: 14px;
+	color: #FFFFFF;
+}
+
+.calories-input::placeholder, .remark-input::placeholder {
+	color: rgba(255, 255, 255, 0.5);
+}
+
+.save-btn {
+	margin: 0 16px 24px 16px;
+	padding: 16px;
+	align-items: center;
+	background-color: rgba(16, 185, 129, 0.5);
+}
+
+.save-btn-text {
+	color: #FFFFFF;
+	font-size: 18px;
+	font-weight: bold;
+}
+</style>

@@ -1,0 +1,487 @@
+<template>
+	<view class="container">
+		<view class="bg-gradient"></view>
+		
+		<view class="glass-card tab-bar">
+			<view 
+				:class="['tab-item', { active: activeTab === 'week' }]"
+				@click="switchTab('week')"
+			>
+				<text :class="['tab-text', { active: activeTab === 'week' }]">本周</text>
+			</view>
+			<view 
+				:class="['tab-item', { active: activeTab === 'month' }]"
+				@click="switchTab('month')"
+			>
+				<text :class="['tab-text', { active: activeTab === 'month' }]">本月</text>
+			</view>
+			<view 
+				:class="['tab-item', { active: activeTab === 'all' }]"
+				@click="switchTab('all')"
+			>
+				<text :class="['tab-text', { active: activeTab === 'all' }]">全部</text>
+			</view>
+		</view>
+		
+		<view class="stats-card-row">
+			<view class="glass-card stats-card stat-green">
+				<text class="stats-value">{{ totalDuration }}</text>
+				<text class="stats-label">总时长(分钟)</text>
+			</view>
+			<view class="glass-card stats-card stat-orange">
+				<text class="stats-value">{{ totalCalories }}</text>
+				<text class="stats-label">消耗卡路里</text>
+			</view>
+		</view>
+		<view class="stats-card-row">
+			<view class="glass-card stats-card stat-blue">
+				<text class="stats-value">{{ activeDays }}</text>
+				<text class="stats-label">运动天数</text>
+			</view>
+			<view class="glass-card stats-card stat-red">
+				<text class="stats-value">{{ totalCount }}</text>
+				<text class="stats-label">运动次数</text>
+			</view>
+		</view>
+		
+		<view class="glass-card chart-card">
+			<text class="chart-title">运动时长趋势</text>
+			<view class="chart-container">
+				<view class="chart-bars">
+					<view 
+						v-for="(item, index) in chartData" 
+						:key="index" 
+						class="chart-bar-item"
+					>
+						<view class="bar-container">
+							<view class="bar" :class="'bar-color-' + (index % 4)" :style="{ height: item.height + 'px' }"></view>
+						</view>
+						<text class="bar-label">{{ item.label }}</text>
+					</view>
+				</view>
+			</view>
+		</view>
+		
+		<view class="glass-card records-card">
+			<text class="records-title">运动记录</text>
+			<view v-if="records.length === 0" class="empty-state">
+				<text class="empty-text">暂无运动记录</text>
+			</view>
+			<view 
+				v-for="(item, index) in records" 
+				:key="index" 
+				class="record-item"
+			>
+				<view class="record-icon" :class="'icon-color-' + (index % 4)">
+					<text class="icon-text">{{ getTypeIcon(item.type) }}</text>
+				</view>
+				<view class="record-info">
+					<text class="record-type">{{ item.typeName }}</text>
+					<text class="record-date">{{ item.date }}</text>
+				</view>
+				<view class="record-stats">
+					<text class="record-duration">{{ item.duration }}分钟</text>
+					<text class="record-calories">{{ item.calories }}千卡</text>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+import { getRecords, type SportRecord, type SportType, sportTypeNames } from '../../utils/storage.uts'
+
+type TabType = 'week' | 'month' | 'all'
+
+const activeTab = ref<TabType>('week')
+const totalDuration = ref(0)
+const totalCalories = ref(0)
+const activeDays = ref(0)
+const totalCount = ref(0)
+const records = ref<SportRecord[]>([])
+const chartData = ref<{ label: string; height: number; value: number }[]>([])
+
+const typeIcons: Record<SportType, string> = {
+	running: '🏃',
+	yoga: '🧘',
+	strength: '💪',
+	swimming: '🏊',
+	cycling: '🚴',
+	dance: '💃',
+	other: '⚡'
+}
+
+function getTypeIcon(type: SportType): string {
+	return typeIcons[type] || '⚡'
+}
+
+function getDateString(date: Date): string {
+	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function getStartDate(tab: TabType): string {
+	const now = new Date()
+	let startDate = new Date()
+	
+	if (tab === 'week') {
+		startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+	} else if (tab === 'month') {
+		startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+	}
+	
+	return getDateString(startDate)
+}
+
+function calculateStats() {
+	const startDate = getStartDate(activeTab.value)
+	const allRecords = getRecords()
+	const filteredRecords = allRecords.filter((item: SportRecord) => item.date >= startDate)
+	
+	let durationSum = 0
+	let caloriesSum = 0
+	const dateSet = new Set<string>()
+	
+	filteredRecords.forEach((item: SportRecord) => {
+		durationSum += item.duration
+		caloriesSum += item.calories
+		dateSet.add(item.date)
+	})
+	
+	totalDuration.value = durationSum
+	totalCalories.value = caloriesSum
+	activeDays.value = dateSet.size
+	totalCount.value = filteredRecords.length
+	records.value = filteredRecords.slice(0, 20)
+}
+
+function calculateChart() {
+	const now = new Date()
+	const labels: string[] = []
+	const values: number[] = []
+	
+	if (activeTab.value === 'week') {
+		for (let i = 6; i >= 0; i--) {
+			const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
+			const dateStr = getDateString(date)
+			labels.push(`${date.getMonth() + 1}/${date.getDate()}`)
+			
+			const dayRecords = getRecords().filter((item: SportRecord) => item.date === dateStr)
+			const dayDuration = dayRecords.reduce((sum: number, item: SportRecord) => sum + item.duration, 0)
+			values.push(dayDuration)
+		}
+	} else if (activeTab.value === 'month') {
+		const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+		const currentDay = now.getDate()
+		const step = Math.ceil(currentDay / 7)
+		
+		for (let i = 0; i < 7; i++) {
+			const dayNum = (i + 1) * step
+			if (dayNum <= daysInMonth) {
+				labels.push(`${dayNum}日`)
+			} else {
+				labels.push(`${daysInMonth}日`)
+			}
+			
+			const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+			const monthEnd = new Date(now.getFullYear(), now.getMonth(), dayNum > daysInMonth ? daysInMonth : dayNum)
+			const startStr = getDateString(monthStart)
+			const endStr = getDateString(monthEnd)
+			
+			const periodRecords = getRecords().filter((item: SportRecord) => item.date >= startStr && item.date <= endStr)
+			const periodDuration = periodRecords.reduce((sum: number, item: SportRecord) => sum + item.duration, 0)
+			values.push(periodDuration)
+		}
+	} else {
+		const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+		const currentMonth = now.getMonth() + 1
+		
+		for (let i = 0; i < 6; i++) {
+			const monthIdx = currentMonth - 5 + i
+			if (monthIdx > 0 && monthIdx <= 12) {
+				labels.push(monthNames[monthIdx - 1])
+			} else {
+				labels.push('')
+			}
+			
+			const monthRecords = getRecords().filter((item: SportRecord) => {
+				const recordMonth = parseInt(item.date.substring(5, 7))
+				return recordMonth === monthIdx
+			})
+			const monthDuration = monthRecords.reduce((sum: number, item: SportRecord) => sum + item.duration, 0)
+			values.push(monthDuration)
+		}
+	}
+	
+	const maxValue = Math.max(...values, 1)
+	const maxHeight = 120
+	
+	chartData.value = labels.map((label: string, index: number) => ({
+		label,
+		value: values[index],
+		height: Math.round((values[index] / maxValue) * maxHeight)
+	}))
+}
+
+function switchTab(tab: TabType) {
+	activeTab.value = tab
+	calculateStats()
+	calculateChart()
+}
+
+onShow(() => {
+	calculateStats()
+	calculateChart()
+})
+</script>
+
+<style>
+.container {
+	flex: 1;
+	overflow-y: scroll;
+}
+
+.bg-gradient {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(135deg, #10B981 0%, #059669 50%, #3B82F6 100%);
+	z-index: -1;
+}
+
+.glass-card {
+	background-color: rgba(255, 255, 255, 0.15);
+	border-radius: 20px;
+	border-width: 1px;
+	border-color: rgba(255, 255, 255, 0.3);
+	border-style: solid;
+	backdrop-filter: blur(10px);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.tab-bar {
+	flex-direction: row;
+	margin: 16px;
+	padding: 6px;
+}
+
+.tab-item {
+	flex: 1;
+	padding: 12px;
+	align-items: center;
+	border-radius: 12px;
+}
+
+.tab-item.active {
+	background-color: rgba(255, 255, 255, 0.25);
+}
+
+.tab-text {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.tab-text.active {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+.stats-card-row {
+	flex-direction: row;
+	gap: 16px;
+	margin: 0 16px 16px 16px;
+}
+
+.stats-card {
+	flex: 1;
+	padding: 18px;
+	align-items: center;
+}
+
+.stat-green {
+	background-color: rgba(16, 185, 129, 0.25);
+	border-color: rgba(16, 185, 129, 0.5);
+}
+
+.stat-blue {
+	background-color: rgba(59, 130, 246, 0.25);
+	border-color: rgba(59, 130, 246, 0.5);
+}
+
+.stat-orange {
+	background-color: rgba(249, 115, 22, 0.25);
+	border-color: rgba(249, 115, 22, 0.5);
+}
+
+.stat-red {
+	background-color: rgba(239, 68, 68, 0.25);
+	border-color: rgba(239, 68, 68, 0.5);
+}
+
+.stats-value {
+	font-size: 26px;
+	font-weight: bold;
+	color: #FFFFFF;
+	margin-bottom: 4px;
+}
+
+.stats-label {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.8);
+}
+
+.chart-card {
+	margin: 0 16px 16px 16px;
+	padding: 20px;
+}
+
+.chart-title {
+	font-size: 16px;
+	font-weight: bold;
+	color: #FFFFFF;
+	margin-bottom: 18px;
+}
+
+.chart-container {
+	height: 180px;
+}
+
+.chart-bars {
+	flex-direction: row;
+	align-items: flex-end;
+	justify-content: space-around;
+	height: 150px;
+	padding-bottom: 10px;
+}
+
+.chart-bar-item {
+	flex-direction: column;
+	align-items: center;
+}
+
+.bar-container {
+	height: 120px;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+
+.bar {
+	width: 26px;
+	border-radius: 6px 6px 0 0;
+}
+
+.bar-color-0 {
+	background: linear-gradient(180deg, #34D399 0%, #10B981 100%);
+}
+
+.bar-color-1 {
+	background: linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%);
+}
+
+.bar-color-2 {
+	background: linear-gradient(180deg, #FB923C 0%, #F97316 100%);
+}
+
+.bar-color-3 {
+	background: linear-gradient(180deg, #F87171 0%, #EF4444 100%);
+}
+
+.bar-label {
+	font-size: 10px;
+	color: rgba(255, 255, 255, 0.7);
+	margin-top: 8px;
+}
+
+.records-card {
+	margin: 0 16px 24px 16px;
+	padding: 20px;
+}
+
+.records-title {
+	font-size: 16px;
+	font-weight: bold;
+	color: #FFFFFF;
+	margin-bottom: 18px;
+}
+
+.empty-state {
+	padding: 40px 0;
+	align-items: center;
+}
+
+.empty-text {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.record-item {
+	flex-direction: row;
+	align-items: center;
+	padding: 14px 0;
+	border-bottom-width: 1px;
+	border-bottom-color: rgba(255, 255, 255, 0.15);
+	border-bottom-style: solid;
+}
+
+.record-icon {
+	width: 44px;
+	height: 44px;
+	border-radius: 22px;
+	align-items: center;
+	justify-content: center;
+	margin-right: 14px;
+}
+
+.icon-color-0 {
+	background-color: rgba(16, 185, 129, 0.3);
+}
+
+.icon-color-1 {
+	background-color: rgba(59, 130, 246, 0.3);
+}
+
+.icon-color-2 {
+	background-color: rgba(249, 115, 22, 0.3);
+}
+
+.icon-color-3 {
+	background-color: rgba(239, 68, 68, 0.3);
+}
+
+.icon-text {
+	font-size: 22px;
+}
+
+.record-info {
+	flex: 1;
+}
+
+.record-type {
+	font-size: 14px;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+.record-date {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.7);
+	margin-top: 4px;
+}
+
+.record-stats {
+	align-items: flex-end;
+}
+
+.record-duration {
+	font-size: 14px;
+	color: #34D399;
+	font-weight: bold;
+}
+
+.record-calories {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.7);
+	margin-top: 4px;
+}
+</style>

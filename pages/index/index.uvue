@@ -1,24 +1,441 @@
 <template>
-	<view>
-		<image class="logo" src="/static/logo.png"></image>
-		<text class="title">{{title}}</text>
+	<view class="container">
+		<view class="bg-gradient"></view>
+		
+		<view class="header">
+			<text class="greeting">{{ greeting }}</text>
+			<text class="date">{{ todayDate }}</text>
+		</view>
+		
+		<view class="glass-card status-card">
+			<view class="status-circle">
+				<text class="status-number">{{ todayDuration }}</text>
+				<text class="status-unit">分钟</text>
+			</view>
+			<text class="status-label">今日运动时长</text>
+			<view class="progress-bar">
+				<view class="progress-fill" :style="{ width: progressWidth }"></view>
+			</view>
+			<text class="goal-text">目标: {{ dailyGoal }}分钟</text>
+		</view>
+		
+		<view class="stats-row">
+			<view class="glass-card stat-item stat-green">
+				<text class="stat-number">{{ weekDays }}</text>
+				<text class="stat-label">本周运动天数</text>
+			</view>
+			<view class="glass-card stat-item stat-blue">
+				<text class="stat-number">{{ streakDays }}</text>
+				<text class="stat-label">连续打卡天数</text>
+			</view>
+		</view>
+		
+		<view class="glass-card quick-actions">
+			<view class="action-title">
+				<text class="action-title-text">快速记录</text>
+			</view>
+			<view class="sport-types">
+				<view 
+					v-for="(item, index) in sportTypes" 
+					:key="index" 
+					:class="['sport-item', 'sport-color-' + (index % 4)]"
+					@click="openRecordPage(item.type)"
+				>
+					<view class="sport-icon-wrap">
+						<text class="sport-icon">{{ item.icon }}</text>
+					</view>
+					<text class="sport-name">{{ item.name }}</text>
+				</view>
+			</view>
+		</view>
+		
+		<view class="glass-card today-records">
+			<view class="section-title">
+				<text class="section-title-text">今日运动记录</text>
+			</view>
+			<text v-if="todayRecords.length === 0" class="empty-text">暂无记录</text>
+			<block v-for="(item, index) in todayRecords" :key="index">
+				<view class="record-item">
+					<view class="record-left">
+						<text class="record-type">{{ item.typeName }}</text>
+						<text class="record-duration">{{ item.duration }}分钟</text>
+					</view>
+					<view class="record-right">
+						<text class="record-time-text">{{ formatTime(item.createdAt) }}</text>
+					</view>
+				</view>
+			</block>
+		</view>
+		
+		<view class="glass-card record-btn" @click="goToRecordPage">
+			<text class="record-btn-text">+ 记录运动</text>
+		</view>
 	</view>
 </template>
 
 <script setup lang="uts">
-	const title = ref('Hello')
+import { getTodayDuration, getWeekRecords, getStreakDays, getTodayRecord, getSettings, type SportRecord, addTestRecord } from '../../utils/storage.uts'
+
+const greeting = ref('早上好')
+const todayDate = ref('')
+const todayDuration = ref(0)
+const dailyGoal = ref(30)
+const weekDays = ref(0)
+const streakDays = ref(0)
+const todayRecords = ref<SportRecord[]>([])
+const progressWidth = ref('0%')
+const isFirstLoad = ref(true)
+
+const sportTypes = ref([
+	{ type: 'running', name: '跑步', icon: '🏃' },
+	{ type: 'yoga', name: '瑜伽', icon: '🧘' },
+	{ type: 'strength', name: '力量', icon: '💪' },
+	{ type: 'swimming', name: '游泳', icon: '🏊' },
+	{ type: 'cycling', name: '骑行', icon: '🚴' },
+	{ type: 'dance', name: '健身操', icon: '💃' },
+	{ type: 'other', name: '其他', icon: '⚡' },
+	{ type: 'more', name: '更多', icon: '➕' }
+])
+
+function updateDateInfo() {
+	const now = new Date()
+	const hours = now.getHours()
+	if (hours < 12) {
+		greeting.value = '早上好'
+	} else if (hours < 18) {
+		greeting.value = '下午好'
+	} else {
+		greeting.value = '晚上好'
+	}
+	
+	const month = now.getMonth() + 1
+	const day = now.getDate()
+	const weekDaysArr = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+	const weekDay = weekDaysArr[now.getDay()]
+	todayDate.value = `${month}月${day}日 ${weekDay}`
+}
+
+function loadData() {
+	const settings = getSettings()
+	dailyGoal.value = settings.dailyGoal
+	
+	todayDuration.value = getTodayDuration()
+	const percent = Math.min((todayDuration.value / dailyGoal.value) * 100, 100)
+	progressWidth.value = percent + '%'
+	
+	const weekRecords = getWeekRecords()
+	const weekDates = [...new Set(weekRecords.map((item: SportRecord) => item.date))]
+	weekDays.value = weekDates.length
+	
+	streakDays.value = getStreakDays()
+	
+	const records = getTodayRecord()
+	const jsonStr = JSON.stringify(records)
+	todayRecords.value = JSON.parse(jsonStr) as SportRecord[]
+}
+
+function formatTime(timestamp: number): string {
+	const date = new Date(timestamp)
+	const hours = date.getHours()
+	const minutes = date.getMinutes()
+	return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+function openRecordPage(sportType: string) {
+	if (sportType === 'more') {
+		uni.switchTab({
+			url: '/pages/record/record'
+		})
+	} else {
+		uni.navigateTo({
+			url: `/pages/record/record?type=${sportType}`
+		})
+	}
+}
+
+function goToRecordPage() {
+	uni.navigateTo({
+		url: '/pages/record/record'
+	})
+}
+
+onShow(() => {
+	updateDateInfo()
+	loadData()
+	getTodayRecord()
+	if (isFirstLoad.value) {
+		isFirstLoad.value = false
+		const records = getTodayRecord()
+		if (records.length === 0) {
+			addTestRecord()
+			loadData()
+			getTodayRecord()
+		}
+	}
+})
 </script>
 
 <style>
-	.logo {
-		height: 100px;
-		width: 100px;
-		margin: 100px auto 25px auto;
-	}
+.container {
+	flex: 1;
+	overflow-y: scroll;
+}
 
-	.title {
-		font-size: 18px;
-		color: #8f8f94;
-		text-align: center;
-	}
+.bg-gradient {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(135deg, #10B981 0%, #059669 50%, #3B82F6 100%);
+	z-index: -1;
+}
+
+.glass-card {
+	background-color: rgba(255, 255, 255, 0.15);
+	border-radius: 20px;
+	border-width: 1px;
+	border-color: rgba(255, 255, 255, 0.3);
+	border-style: solid;
+	backdrop-filter: blur(10px);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+	margin-bottom: 24px;
+	padding: 16px;
+}
+
+.greeting {
+	font-size: 32px;
+	font-weight: bold;
+	color: #FFFFFF;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.date {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.8);
+	margin-top: 4px;
+}
+
+.status-card {
+	padding: 24px;
+	margin: 0 16px 16px 16px;
+	align-items: center;
+}
+
+.status-circle {
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.status-number {
+	font-size: 56px;
+	font-weight: bold;
+	color: #FFFFFF;
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.status-unit {
+	font-size: 18px;
+	color: rgba(255, 255, 255, 0.8);
+	margin-top: 4px;
+}
+
+.status-label {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.9);
+	margin-bottom: 16px;
+}
+
+.progress-bar {
+	width: 100%;
+	height: 8px;
+	background-color: rgba(255, 255, 255, 0.2);
+	border-radius: 4px;
+	overflow: hidden;
+	margin-bottom: 8px;
+}
+
+.progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, #34D399 0%, #10B981 100%);
+	border-radius: 4px;
+}
+
+.goal-text {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.stats-row {
+	flex-direction: row;
+	gap: 16px;
+	margin: 0 16px 16px 16px;
+}
+
+.stat-item {
+	flex: 1;
+	padding: 16px;
+	align-items: center;
+}
+
+.stat-green {
+	background-color: rgba(16, 185, 129, 0.2);
+	border-color: rgba(16, 185, 129, 0.4);
+}
+
+.stat-blue {
+	background-color: rgba(59, 130, 246, 0.2);
+	border-color: rgba(59, 130, 246, 0.4);
+}
+
+.stat-number {
+	font-size: 28px;
+	font-weight: bold;
+	color: #FFFFFF;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-label {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.8);
+	margin-top: 4px;
+}
+
+.quick-actions {
+	padding: 20px;
+	margin: 0 16px 16px 16px;
+}
+
+.action-title {
+	margin-bottom: 16px;
+}
+
+.action-title-text {
+	font-size: 18px;
+	font-weight: bold;
+	color: #FFFFFF;
+}
+
+.sport-types {
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.sport-item {
+	width: 25%;
+	padding: 12px 0;
+	align-items: center;
+}
+
+.sport-icon-wrap {
+	width: 52px;
+	height: 52px;
+	border-radius: 16px;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 8px;
+	border-width: 1px;
+	border-style: solid;
+}
+
+.sport-color-0 .sport-icon-wrap {
+	background-color: rgba(16, 185, 129, 0.3);
+	border-color: rgba(16, 185, 129, 0.5);
+}
+
+.sport-color-1 .sport-icon-wrap {
+	background-color: rgba(59, 130, 246, 0.3);
+	border-color: rgba(59, 130, 246, 0.5);
+}
+
+.sport-color-2 .sport-icon-wrap {
+	background-color: rgba(249, 115, 22, 0.3);
+	border-color: rgba(249, 115, 22, 0.5);
+}
+
+.sport-color-3 .sport-icon-wrap {
+	background-color: rgba(239, 68, 68, 0.3);
+	border-color: rgba(239, 68, 68, 0.5);
+}
+
+.sport-icon {
+	font-size: 26px;
+}
+
+.sport-name {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.today-records {
+	padding: 20px;
+	margin: 0 16px 16px 16px;
+}
+
+.section-title {
+	margin-bottom: 16px;
+}
+
+.section-title-text {
+	font-size: 18px;
+	font-weight: bold;
+	color: #FFFFFF;
+}
+
+.empty-text {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.6);
+	padding: 20px 0;
+	align-items: center;
+}
+
+.record-item {
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 14px 0;
+	border-bottom-width: 1px;
+	border-bottom-color: rgba(255, 255, 255, 0.15);
+	border-bottom-style: solid;
+}
+
+.record-left {
+	flex-direction: column;
+}
+
+.record-type {
+	font-size: 15px;
+	color: #FFFFFF;
+}
+
+.record-duration {
+	font-size: 13px;
+	color: #34D399;
+	margin-top: 4px;
+}
+
+.record-right {
+	
+}
+
+.record-time-text {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.record-btn {
+	margin: 0 16px 24px 16px;
+	padding: 16px;
+	align-items: center;
+	background-color: rgba(16, 185, 129, 0.4);
+}
+
+.record-btn-text {
+	color: #FFFFFF;
+	font-size: 18px;
+	font-weight: bold;
+}
 </style>

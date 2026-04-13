@@ -48,4 +48,14 @@
 	.uni-column {
 		flex-direction: column;
 	}
+
+	page {
+		flex: 1;
+		background-color: transparent;
+	}
+	
+	.page-content {
+		flex: 1;
+		overflow-y: scroll;
+	}
 </style>

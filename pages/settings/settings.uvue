@@ -1,0 +1,580 @@
+<template>
+	<view class="container">
+		<view class="bg-gradient"></view>
+		
+		<view class="glass-card section">
+			<text class="section-title">提醒设置</text>
+			
+			<view class="setting-item" @click="showTimePicker">
+				<text class="setting-label">提醒时间</text>
+				<view class="setting-value">
+					<text class="setting-text">{{ settings.reminderTime }}</text>
+					<text class="setting-arrow">&gt;</text>
+				</view>
+			</view>
+			
+			<view class="setting-item" @click="showDaysPicker">
+				<text class="setting-label">提醒日期</text>
+				<view class="setting-value">
+					<text class="setting-text">{{ daysText }}</text>
+					<text class="setting-arrow">&gt;</text>
+				</view>
+			</view>
+			
+			<view class="setting-item">
+				<text class="setting-label">提醒方式</text>
+				<view class="reminder-methods">
+					<view 
+						:class="['method-btn', 'method-green', { active: settings.reminderMethod === 'push' }]"
+						@click="setReminderMethod('push')"
+					>
+						<text :class="['method-text', { active: settings.reminderMethod === 'push' }]">推送</text>
+					</view>
+					<view 
+						:class="['method-btn', 'method-blue', { active: settings.reminderMethod === 'inapp' }]"
+						@click="setReminderMethod('inapp')"
+					>
+						<text :class="['method-text', { active: settings.reminderMethod === 'inapp' }]">弹窗</text>
+					</view>
+					<view 
+						:class="['method-btn', 'method-orange', { active: settings.reminderMethod === 'both' }]"
+						@click="setReminderMethod('both')"
+					>
+						<text :class="['method-text', { active: settings.reminderMethod === 'both' }]">两者</text>
+					</view>
+				</view>
+			</view>
+		</view>
+		
+		<view class="glass-card section">
+			<text class="section-title">运动目标</text>
+			
+			<view class="setting-item">
+				<text class="setting-label">每日目标时长</text>
+				<view class="goal-input">
+					<view class="glass-btn goal-btn" @click="decreaseGoal">
+						<text class="goal-btn-text">-</text>
+					</view>
+					<view class="goal-value-wrap">
+						<input 
+							class="goal-value" 
+							type="number" 
+							v-model="dailyGoalInput"
+							@blur="saveGoal"
+						/>
+					</view>
+					<view class="glass-btn goal-btn" @click="increaseGoal">
+						<text class="goal-btn-text">+</text>
+					</view>
+					<text class="goal-unit">分钟</text>
+				</view>
+			</view>
+		</view>
+		
+		<view class="glass-card section">
+			<text class="section-title">数据管理</text>
+			
+			<view class="setting-item" @click="exportData">
+				<text class="setting-label">导出数据</text>
+				<view class="setting-value">
+					<text class="setting-arrow">&gt;</text>
+				</view>
+			</view>
+			
+			<view class="setting-item" @click="clearData">
+				<text class="setting-label-danger">清空数据</text>
+				<view class="setting-value">
+					<text class="setting-arrow">&gt;</text>
+				</view>
+			</view>
+		</view>
+		
+		<view class="glass-card section">
+			<text class="section-title">关于</text>
+			
+			<view class="setting-item">
+				<text class="setting-label">版本</text>
+				<view class="setting-value">
+					<text class="setting-text">v1.0.0</text>
+				</view>
+			</view>
+		</view>
+		
+		<view class="modal-mask" v-if="showTimeModal || showDaysModal" @click="closeAll">
+			<view class="modal-content" @click.stop>
+				<view class="modal-header">
+					<text class="modal-cancel" @click="closeTimePicker">取消</text>
+					<text class="modal-title">{{ showTimeModal ? '选择时间' : '选择日期' }}</text>
+					<text class="modal-confirm" @click="showTimeModal ? confirmTime() : confirmDays()">确定</text>
+				</view>
+				
+				<picker-view v-if="showTimeModal" class="time-picker" :value="timePickerValue" @change="onTimeChange">
+					<picker-view-column>
+						<view v-for="(hour, index) in hours" :key="index" class="picker-item">
+							<text class="picker-item-text">{{ hour }}时</text>
+						</view>
+					</picker-view-column>
+					<picker-view-column>
+						<view v-for="(minute, index) in minutes" :key="index" class="picker-item">
+							<text class="picker-item-text">{{ minute }}分</text>
+						</view>
+					</picker-view-column>
+				</picker-view>
+				
+				<view v-if="showDaysModal" class="days-options">
+					<view 
+						v-for="(day, index) in weekDays" 
+						:key="index"
+						:class="['day-option', 'day-color-' + (index % 4), { active: selectedDays.includes(index + 1) }]"
+						@click="toggleDay(index + 1)"
+					>
+						<text :class="['day-text', { active: selectedDays.includes(index + 1) }]">{{ day }}</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+import { getSettings, saveSettings, exportData, type UserSettings } from '../../utils/storage.uts'
+
+const settings = ref<UserSettings>({
+	reminderTime: '08:00',
+	reminderDays: [1, 2, 3, 4, 5],
+	reminderMethod: 'both',
+	dailyGoal: 30,
+	sportTypes: []
+})
+
+const dailyGoalInput = ref(30)
+const showTimeModal = ref(false)
+const showDaysModal = ref(false)
+
+const hours = ref<string[]>([])
+const minutes = ref<string[]>([])
+const timePickerValue = ref<number[]>([8, 0])
+
+const weekDays = ref(['周一', '周二', '周三', '周四', '周五', '周六', '周日'])
+const selectedDays = ref<number[]>([])
+
+function initSettings() {
+	const data = getSettings()
+	settings.value = data
+	dailyGoalInput.value = data.dailyGoal
+	
+	for (let i = 0; i < 24; i++) {
+		hours.value.push(String(i).padStart(2, '0'))
+	}
+	for (let i = 0; i < 60; i++) {
+		minutes.value.push(String(i).padStart(2, '0'))
+	}
+	
+	const timeParts = data.reminderTime.split(':')
+	timePickerValue.value = [parseInt(timeParts[0]), parseInt(timeParts[1])]
+	
+	selectedDays.value = [...data.reminderDays]
+}
+
+const daysText = computed((): string => {
+	if (selectedDays.value.length === 7) {
+		return '每天'
+	}
+	if (selectedDays.value.length === 5 && 
+		selectedDays.value.includes(1) && selectedDays.value.includes(2) &&
+		selectedDays.value.includes(3) && selectedDays.value.includes(4) &&
+		selectedDays.value.includes(5)) {
+		return '工作日'
+	}
+	if (selectedDays.value.length === 2 && 
+		selectedDays.value.includes(6) && selectedDays.value.includes(7)) {
+		return '周末'
+	}
+	return `${selectedDays.value.length}天/周`
+})
+
+function showTimePicker() {
+	showTimeModal.value = true
+}
+
+function closeTimePicker() {
+	showTimeModal.value = false
+}
+
+function closeDaysPicker() {
+	showDaysModal.value = false
+}
+
+function closeAll() {
+	showTimeModal.value = false
+	showDaysModal.value = false
+}
+
+function onTimeChange(e: { detail: { value: number[] } }) {
+	timePickerValue.value = e.detail.value
+}
+
+function confirmTime() {
+	const hour = hours.value[timePickerValue.value[0]]
+	const minute = minutes.value[timePickerValue.value[1]]
+	settings.value.reminderTime = `${hour}:${minute}`
+	saveSettings(settings.value)
+	closeTimePicker()
+}
+
+function showDaysPicker() {
+	showDaysModal.value = true
+}
+
+function toggleDay(day: number) {
+	const index = selectedDays.value.indexOf(day)
+	if (index > -1) {
+		if (selectedDays.value.length > 1) {
+			selectedDays.value.splice(index, 1)
+		}
+	} else {
+		selectedDays.value.push(day)
+		selectedDays.value.sort()
+	}
+}
+
+function confirmDays() {
+	settings.value.reminderDays = [...selectedDays.value]
+	saveSettings(settings.value)
+	closeDaysPicker()
+}
+
+function setReminderMethod(method: 'push' | 'inapp' | 'both') {
+	settings.value.reminderMethod = method
+	saveSettings(settings.value)
+}
+
+function decreaseGoal() {
+	if (dailyGoalInput.value > 5) {
+		dailyGoalInput.value -= 5
+		saveGoal()
+	}
+}
+
+function increaseGoal() {
+	if (dailyGoalInput.value < 180) {
+		dailyGoalInput.value += 5
+		saveGoal()
+	}
+}
+
+function saveGoal() {
+	if (dailyGoalInput.value < 5) {
+		dailyGoalInput.value = 5
+	}
+	if (dailyGoalInput.value > 180) {
+		dailyGoalInput.value = 180
+	}
+	settings.value.dailyGoal = dailyGoalInput.value
+	saveSettings(settings.value)
+}
+
+function exportData() {
+	const data = exportData()
+	uni.setStorageSync('fitgo_export', data)
+	uni.showModal({
+		title: '导出成功',
+		content: '数据已导出，是否查看？',
+		success: (res) => {
+			if (res.confirm) {
+				uni.showToast({
+					title: '请在控制台查看导出数据',
+					icon: 'none'
+				})
+				console.log('Export Data:', data)
+			}
+		}
+	})
+}
+
+function clearData() {
+	uni.showModal({
+		title: '确认清空',
+		content: '确定要清空所有运动数据吗？此操作不可恢复。',
+		success: (res) => {
+			if (res.confirm) {
+				uni.clearStorageSync()
+				uni.reLaunch({
+					url: '/pages/index/index'
+				})
+			}
+		}
+	})
+}
+
+onShow(() => {
+	initSettings()
+})
+</script>
+
+<style>
+.container {
+	flex: 1;
+	overflow-y: scroll;
+}
+
+.bg-gradient {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(135deg, #10B981 0%, #059669 50%, #3B82F6 100%);
+	z-index: -1;
+}
+
+.glass-card {
+	background-color: rgba(255, 255, 255, 0.15);
+	border-radius: 20px;
+	border-width: 1px;
+	border-color: rgba(255, 255, 255, 0.3);
+	border-style: solid;
+	backdrop-filter: blur(10px);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-btn {
+	background-color: rgba(255, 255, 255, 0.2);
+	border-radius: 14px;
+	border-width: 1px;
+	border-color: rgba(255, 255, 255, 0.3);
+	border-style: solid;
+}
+
+.section {
+	margin: 16px;
+	padding: 16px;
+}
+
+.section-title {
+	font-size: 14px;
+	font-weight: bold;
+	color: rgba(255, 255, 255, 0.7);
+	margin-bottom: 14px;
+}
+
+.setting-item {
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 14px 0;
+	border-bottom-width: 1px;
+	border-bottom-color: rgba(255, 255, 255, 0.15);
+	border-bottom-style: solid;
+}
+
+.setting-item:last-child {
+	border-bottom-width: 0;
+}
+
+.setting-label {
+	font-size: 15px;
+	color: #FFFFFF;
+}
+
+.setting-label-danger {
+	font-size: 15px;
+	color: #EF4444;
+}
+
+.setting-value {
+	flex-direction: row;
+	align-items: center;
+}
+
+.setting-text {
+	font-size: 15px;
+	color: rgba(255, 255, 255, 0.8);
+	margin-right: 10px;
+}
+
+.setting-arrow {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.5);
+}
+
+.reminder-methods {
+	flex-direction: row;
+	gap: 10px;
+}
+
+.method-btn {
+	padding: 8px 18px;
+	border-radius: 16px;
+}
+
+.method-green {
+	background-color: rgba(16, 185, 129, 0.2);
+}
+
+.method-blue {
+	background-color: rgba(59, 130, 246, 0.2);
+}
+
+.method-orange {
+	background-color: rgba(249, 115, 22, 0.2);
+}
+
+.method-btn.active {
+	background-color: rgba(255, 255, 255, 0.3);
+}
+
+.method-text {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.8);
+}
+
+.method-text.active {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+.goal-input {
+	flex-direction: row;
+	align-items: center;
+	gap: 10px;
+}
+
+.goal-btn {
+	width: 30px;
+	height: 30px;
+	align-items: center;
+	justify-content: center;
+}
+
+.goal-btn-text {
+	font-size: 20px;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+.goal-value-wrap {
+	width: 52px;
+	height: 30px;
+	background-color: rgba(255, 255, 255, 0.15);
+	border-radius: 10px;
+	align-items: center;
+	justify-content: center;
+}
+
+.goal-value {
+	width: 52px;
+	height: 30px;
+	text-align: center;
+	font-size: 14px;
+	color: #FFFFFF;
+}
+
+.goal-unit {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.8);
+}
+
+.modal-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	align-items: flex-end;
+	justify-content: center;
+	z-index: 999;
+}
+
+.modal-content {
+	width: 100%;
+	background-color: rgba(255, 255, 255, 0.95);
+	border-radius: 20px 20px 0 0;
+}
+
+.modal-header {
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 18px;
+	border-bottom-width: 1px;
+	border-bottom-color: rgba(0, 0, 0, 0.1);
+	border-bottom-style: solid;
+}
+
+.modal-cancel {
+	font-size: 15px;
+	color: #666666;
+}
+
+.modal-confirm {
+	font-size: 15px;
+	color: #10B981;
+	font-weight: bold;
+}
+
+.modal-title {
+	font-size: 16px;
+	font-weight: bold;
+	color: #333333;
+}
+
+.time-picker {
+	height: 200px;
+}
+
+.picker-item {
+	align-items: center;
+	justify-content: center;
+}
+
+.picker-item-text {
+	font-size: 16px;
+	color: #333333;
+}
+
+.days-options {
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 12px;
+	padding: 20px;
+}
+
+.day-option {
+	width: 28%;
+	padding: 14px;
+	border-radius: 14px;
+	align-items: center;
+}
+
+.day-color-0 {
+	background-color: rgba(16, 185, 129, 0.2);
+}
+
+.day-color-1 {
+	background-color: rgba(59, 130, 246, 0.2);
+}
+
+.day-color-2 {
+	background-color: rgba(249, 115, 22, 0.2);
+}
+
+.day-color-3 {
+	background-color: rgba(239, 68, 68, 0.2);
+}
+
+.day-option.active {
+	background-color: rgba(255, 255, 255, 0.3);
+}
+
+.day-text {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.day-text.active {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+</style>
