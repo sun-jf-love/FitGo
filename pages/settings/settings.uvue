@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<scroll-view class="container" scroll-y="true">
 		<view class="bg-gradient" :style="{ background: themeColors.bgGradient }"></view>
 		
 		<view class="glass-card section" :style="{ background: themeColors.cardBg, borderColor: themeColors.cardBorder }">
@@ -162,7 +162,7 @@
 				</view>
 			</view>
 		</view>
-	</view>
+	</scroll-view>
 </template>
 
 <script setup lang="uts">
@@ -178,16 +178,16 @@ const settings = ref<UserSettings>({
 	theme: 'dark'
 })
 
-const dailyGoalInput = ref(30)
-const showTimeModal = ref(false)
-const showDaysModal = ref(false)
+const dailyGoalInput = ref<number>(30)
+const showTimeModal = ref<boolean>(false)
+const showDaysModal = ref<boolean>(false)
 const themeColors = ref<ThemeColors>(getThemeColors('dark'))
 
 const hours = ref<string[]>([])
 const minutes = ref<string[]>([])
 const timePickerValue = ref<number[]>([8, 0])
 
-const weekDays = ref(['周一', '周二', '周三', '周四', '周五', '周六', '周日'])
+const weekDays = ref<string[]>(['周一', '周二', '周三', '周四', '周五', '周六', '周日'])
 const selectedDays = ref<number[]>([])
 
 function initSettings() {
@@ -362,7 +362,7 @@ onShow(() => {
 <style>
 .container {
 	flex: 1;
-	overflow-y: scroll;
+	overflow: hidden;
 }
 
 .bg-gradient {
@@ -378,7 +378,6 @@ onShow(() => {
 	border-radius: 20px;
 	border-width: 1px;
 	border-style: solid;
-	backdrop-filter: blur(10px);
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
@@ -430,7 +429,6 @@ onShow(() => {
 
 .reminder-methods {
 	flex-direction: row;
-	gap: 10px;
 }
 
 .method-btn {
@@ -438,6 +436,11 @@ onShow(() => {
 	border-radius: 16px;
 	border-width: 1px;
 	border-style: solid;
+	margin-right: 10px;
+}
+
+.method-btn:last-child {
+	margin-right: 0;
 }
 
 .method-text {
@@ -448,7 +451,6 @@ onShow(() => {
 .goal-input {
 	flex-direction: row;
 	align-items: center;
-	gap: 10px;
 }
 
 .goal-btn {
@@ -459,6 +461,7 @@ onShow(() => {
 	justify-content: center;
 	border-width: 1px;
 	border-style: solid;
+	margin-right: 10px;
 }
 
 .goal-btn-text {
@@ -474,6 +477,7 @@ onShow(() => {
 	justify-content: center;
 	border-width: 1px;
 	border-style: solid;
+	margin-right: 10px;
 }
 
 .goal-value {
@@ -489,7 +493,6 @@ onShow(() => {
 
 .theme-options {
 	flex-direction: row;
-	gap: 12px;
 }
 
 .theme-btn {
@@ -497,6 +500,11 @@ onShow(() => {
 	border-radius: 20px;
 	border-width: 1px;
 	border-style: solid;
+	margin-right: 12px;
+}
+
+.theme-btn:last-child {
+	margin-right: 0;
 }
 
 .theme-text {
@@ -562,7 +570,6 @@ onShow(() => {
 .days-options {
 	flex-direction: row;
 	flex-wrap: wrap;
-	gap: 12px;
 	padding: 20px;
 }
 
@@ -571,6 +578,8 @@ onShow(() => {
 	padding: 14px;
 	border-radius: 14px;
 	align-items: center;
+	margin-right: 12px;
+	margin-bottom: 12px;
 }
 
 .day-text {

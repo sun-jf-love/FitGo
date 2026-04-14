@@ -52,21 +52,43 @@ function formatDate(date: Date): string {
 	return year + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0')
 }
 
-type StorageSettingsType = { settings?: any }
-
-type StorageDataType = { records?: any[]; settings?: any }
+type StorageDataType = {
+	records: SportRecord[]
+	settings: UserSettings
+}
 
 export function getData(): AppData {
 	const data = uni.getStorageSync(STORAGE_KEY)
-	if (data != null && data != '') {
-		const jsonStr = JSON.stringify(data)
-		const parsed = JSON.parse(jsonStr) as StorageDataType
-		const records = parsed.records
-		const settings = parsed.settings
-		if (records != null && settings != null) {
+	if (data != null) {
+		const jsonObj = data as UTSJSONObject
+		const recordsArray = jsonObj['records']
+		const settingsObj = jsonObj['settings'] as UTSJSONObject | null
+		if (Array.isArray(recordsArray)) {
+			const records: SportRecord[] = []
+			recordsArray.forEach((item: Any) => {
+				const record: UTSJSONObject = item as UTSJSONObject
+				records.push({
+					id: record['id'] as string,
+					type: record['type'] as SportType,
+					typeName: record['typeName'] as string,
+					duration: record['duration'] as number,
+					calories: record['calories'] as number,
+					date: record['date'] as string,
+					remark: record['remark'] as string,
+					createdAt: record['createdAt'] as number
+				})
+			})
+			const settings: UserSettings = {
+				reminderTime: (settingsObj?.['reminderTime'] as string) ?? DEFAULT_SETTINGS.reminderTime,
+				reminderDays: (settingsObj?.['reminderDays'] as number[]) ?? DEFAULT_SETTINGS.reminderDays,
+				reminderMethod: (settingsObj?.['reminderMethod'] as 'push' | 'inapp' | 'both') ?? DEFAULT_SETTINGS.reminderMethod,
+				dailyGoal: (settingsObj?.['dailyGoal'] as number) ?? DEFAULT_SETTINGS.dailyGoal,
+				sportTypes: (settingsObj?.['sportTypes'] as SportType[]) ?? DEFAULT_SETTINGS.sportTypes,
+				theme: (settingsObj?.['theme'] as 'light' | 'dark') ?? DEFAULT_SETTINGS.theme
+			}
 			return {
-				records: records as SportRecord[],
-				settings: settings as UserSettings
+				records: records,
+				settings: settings
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 <script setup lang="uts">
 	// #ifdef APP-ANDROID || APP-HARMONY
-	let firstBackTime = 0
+	let firstBackTime: number = 0
 	// #endif
 
 	onLaunch(() => {
@@ -49,13 +49,8 @@
 		flex-direction: column;
 	}
 
-	page {
+	.page {
 		flex: 1;
 		background-color: transparent;
-	}
-	
-	.page-content {
-		flex: 1;
-		overflow-y: scroll;
 	}
 </style>

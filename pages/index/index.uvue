@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<scroll-view class="container" scroll-y="true">
 		<view class="bg-gradient" :style="{ background: themeColors.bgGradient }"></view>
 		
 		<view class="header">
@@ -70,22 +70,22 @@
 		<view class="glass-card record-btn" :style="{ background: themeColors.buttonGradient }" @click="goToRecordPage">
 			<text class="record-btn-text" :style="{ color: themeColors.buttonText }">+ 记录运动</text>
 		</view>
-	</view>
+	</scroll-view>
 </template>
 
 <script setup lang="uts">
 import { getTodayDuration, getWeekRecords, getStreakDays, getTodayRecord, getSettings, type SportRecord, addTestRecord } from '../../utils/storage.uts'
 import { getCurrentTheme, getThemeColors, type ThemeColors } from '../../utils/theme.uts'
 
-const greeting = ref('早上好')
-const todayDate = ref('')
-const todayDuration = ref(0)
-const dailyGoal = ref(30)
-const weekDays = ref(0)
-const streakDays = ref(0)
+const greeting = ref<string>('早上好')
+const todayDate = ref<string>('')
+const todayDuration = ref<number>(0)
+const dailyGoal = ref<number>(30)
+const weekDays = ref<number>(0)
+const streakDays = ref<number>(0)
 const todayRecords = ref<SportRecord[]>([])
-const progressWidth = ref('0%')
-const isFirstLoad = ref(true)
+const progressWidth = ref<string>('0%')
+const isFirstLoad = ref<boolean>(true)
 const themeColors = ref<ThemeColors>(getThemeColors('dark'))
 
 type SportTypeItem = {
@@ -137,9 +137,7 @@ function loadData() {
 	
 	streakDays.value = getStreakDays()
 	
-	const records = getTodayRecord()
-	const jsonStr = JSON.stringify(records)
-	todayRecords.value = JSON.parse(jsonStr) as SportRecord[]
+	todayRecords.value = getTodayRecord()
 }
 
 function formatTime(timestamp: number): string {
@@ -198,7 +196,7 @@ onMounted(() => {
 <style>
 .container {
 	flex: 1;
-	overflow-y: scroll;
+	overflow: hidden;
 }
 
 .bg-gradient {
@@ -214,7 +212,6 @@ onMounted(() => {
 	border-radius: 20px;
 	border-width: 1px;
 	border-style: solid;
-	backdrop-filter: blur(10px);
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
@@ -278,7 +275,6 @@ onMounted(() => {
 
 .stats-row {
 	flex-direction: row;
-	gap: 16px;
 	margin: 0 16px 16px 16px;
 }
 
@@ -286,6 +282,11 @@ onMounted(() => {
 	flex: 1;
 	padding: 16px;
 	align-items: center;
+	margin-right: 16px;
+}
+
+.stat-item:last-child {
+	margin-right: 0;
 }
 
 .stat-number {

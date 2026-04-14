@@ -22,14 +22,6 @@ export type ThemeColors = {
 	modalBorder: string
 }
 
-type StorageSettings = {
-	theme?: ThemeType
-}
-
-type StorageData = {
-	settings?: StorageSettings
-}
-
 export const lightTheme: ThemeColors = {
 	bgGradient: 'linear-gradient(180deg, #FFFFFF 0%, #F0F4FF 50%, #E8F4FF 100%)',
 	cardBg: 'rgba(255, 255, 255, 0.7)',
@@ -78,17 +70,20 @@ export function getThemeColors(theme: ThemeType): ThemeColors {
 	return theme === 'light' ? lightTheme : darkTheme
 }
 
-type StorageThemeType = { theme?: ThemeType }
+type StorageThemeType = { theme: ThemeType }
 
-type StorageDataType = { settings?: StorageThemeType }
+type StorageDataType = { settings: StorageThemeType }
 
 export function getCurrentTheme(): ThemeType {
 	const settings = uni.getStorageSync('fitgo_data')
-	if (settings != null && settings != '') {
-		const jsonStr = JSON.stringify(settings)
-		const parsed = JSON.parse(jsonStr) as StorageDataType
-		if (parsed.settings != null && parsed.settings.theme != null) {
-			return parsed.settings.theme
+	if (settings != null) {
+		const jsonObj = settings as UTSJSONObject
+		const settingsObj = jsonObj['settings'] as UTSJSONObject | null
+		if (settingsObj != null) {
+			const theme = settingsObj['theme'] as string | null
+			if (theme === 'light' || theme === 'dark') {
+				return theme
+			}
 		}
 	}
 	return 'dark'

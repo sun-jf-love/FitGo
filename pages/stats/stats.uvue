@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<scroll-view class="container" scroll-y="true">
 		<view class="bg-gradient" :style="{ background: themeColors.bgGradient }"></view>
 		
 		<view class="glass-card tab-bar" :style="{ background: themeColors.cardBg }">
@@ -85,7 +85,7 @@
 				</view>
 			</view>
 		</view>
-	</view>
+	</scroll-view>
 </template>
 
 <script setup lang="uts">
@@ -94,14 +94,14 @@ import { getCurrentTheme, getThemeColors, type ThemeColors } from '../../utils/t
 
 type TabType = 'week' | 'month' | 'all'
 
-const activeTab = ref<TabType>('week')
-const totalDuration = ref(0)
-const totalCalories = ref(0)
-const activeDays = ref(0)
-const totalCount = ref(0)
-const records = ref<SportRecord[]>([])
 type ChartItem = { label: string; height: number; value: number }
 
+const activeTab = ref<TabType>('week')
+const totalDuration = ref<number>(0)
+const totalCalories = ref<number>(0)
+const activeDays = ref<number>(0)
+const totalCount = ref<number>(0)
+const records = ref<SportRecord[]>([])
 const chartData = ref<ChartItem[]>([])
 const themeColors = ref<ThemeColors>(getThemeColors('dark'))
 
@@ -254,7 +254,7 @@ onShow(() => {
 <style>
 .container {
 	flex: 1;
-	overflow-y: scroll;
+	overflow: hidden;
 }
 
 .bg-gradient {
@@ -270,7 +270,6 @@ onShow(() => {
 	border-radius: 20px;
 	border-width: 1px;
 	border-style: solid;
-	backdrop-filter: blur(10px);
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
@@ -298,7 +297,6 @@ onShow(() => {
 
 .stats-card-row {
 	flex-direction: row;
-	gap: 16px;
 	margin: 0 16px 16px 16px;
 }
 
@@ -308,6 +306,11 @@ onShow(() => {
 	align-items: center;
 	border-width: 1px;
 	border-style: solid;
+	margin-right: 16px;
+}
+
+.stats-card:last-child {
+	margin-right: 0;
 }
 
 .stats-value {
