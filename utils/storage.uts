@@ -65,7 +65,7 @@ export function getData(): AppData {
 		const settingsObj = jsonObj['settings'] as UTSJSONObject | null
 		if (Array.isArray(recordsArray)) {
 			const records: SportRecord[] = []
-			recordsArray.forEach((item: Any) => {
+			recordsArray.forEach((item: any) => {
 				const record: UTSJSONObject = item as UTSJSONObject
 				records.push({
 					id: record['id'] as string,
